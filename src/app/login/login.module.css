@@ -1,0 +1,199 @@
+.page {
+  min-height: 100svh;
+  display: flex;
+  justify-content: center;
+  background:
+    radial-gradient(
+      circle at 85% 5%,
+      rgba(255, 255, 255, 0.28),
+      transparent 30%
+    ),
+    linear-gradient(
+      160deg,
+      #ff6849 0%,
+      #f03835 45%,
+      #d9182b 100%
+    );
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 20px 24px;
+  box-sizing: border-box;
+}
+
+.brandArea {
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  text-align: center;
+}
+
+.logoMark {
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 40px rgba(113, 0, 12, 0.22);
+  font-size: 35px;
+  font-weight: 900;
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  margin: 0;
+  font-size: 43px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.tagline {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.8;
+  opacity: 0.92;
+}
+
+.card {
+  padding: 28px 22px 24px;
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(110, 0, 14, 0.26);
+}
+
+.heading {
+  margin: 0;
+  color: #202020;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.description {
+  margin: 7px 0 24px;
+  color: #777777;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  color: #494949;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.input {
+  width: 100%;
+  padding: 15px 16px;
+  box-sizing: border-box;
+  border: 1px solid #dedede;
+  border-radius: 14px;
+  outline: none;
+  background: #fafafa;
+  color: #222222;
+  font-size: 16px;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input::placeholder {
+  color: #aaaaaa;
+}
+
+.input:focus {
+  border-color: #ed3437;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(237, 52, 55, 0.12);
+}
+
+.button {
+  width: 100%;
+  margin-top: 4px;
+  padding: 16px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f44136, #dc172d);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 11px 25px rgba(220, 23, 45, 0.3);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(220, 23, 45, 0.36);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.signupText {
+  margin: 22px 0 0;
+  color: #777777;
+  font-size: 14px;
+  text-align: center;
+}
+
+.signupLink {
+  margin-left: 6px;
+  color: #df2032;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.signupLink:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 24px 16px 20px;
+  }
+
+  .brandArea {
+    min-height: 230px;
+  }
+
+  .logo {
+    font-size: 38px;
+  }
+
+  .card {
+    padding: 26px 20px 22px;
+  }
+}

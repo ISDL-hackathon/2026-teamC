@@ -1,8 +1,8 @@
 .wrapper {
-  min-height: 100vh;
-  background: #dcdcdc;
   display: flex;
   justify-content: center;
+  min-height: 100vh;
+  background: #dcdcdc;
 }
 
 .page {
@@ -10,479 +10,148 @@
   width: 100%;
   max-width: 390px;
   min-height: 100vh;
-  background: #eeeeee;
-  color: #222;
-  font-family: sans-serif;
-  padding-bottom: 76px;
   overflow-x: hidden;
+  background: #f1f1f1;
+  color: #222222;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP",
+    sans-serif;
 }
 
 .header {
   position: fixed;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
-  width: min(390px, 100%);
-  height: 64px;
   z-index: 100;
-  background: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  width: min(390px, 100%);
+  height: 64px;
+  padding: 0 22px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transform: translateX(-50%);
 }
 
-.header h1 {
+.headerButton {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #333333;
+  font-size: 21px;
+  cursor: pointer;
+  place-items: center;
+}
+
+.logo {
+  margin: 0;
   color: #ef3f43;
   font-size: 18px;
+  font-weight: 800;
   letter-spacing: 4px;
-  margin: 0;
-}
-
-.menu,
-.bell {
-  font-size: 22px;
 }
 
 .content {
-  padding: 88px 14px 18px;
+  min-height: 100vh;
+  padding: 82px 14px 92px;
 }
 
 .tabs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  background: white;
-  border-radius: 18px;
+  margin-bottom: 16px;
   padding: 6px;
-  margin-bottom: 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.05);
 }
 
 .tab {
-  border: none;
-  background: transparent;
-  padding: 14px 0;
-  font-weight: 700;
-  color: #999;
-  border-radius: 14px;
-  cursor: pointer;
-}
-
-.active {
-  background: white;
-  color: #ef3f43;
-  border-bottom: 3px solid #ef3f43;
-}
-
-.card,
-.smallCard,
-.teamCard {
-  background: white;
-  border-radius: 22px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.card h1,
-.card h2,
-.card h3,
-.teamCard h2,
-.teamCard h3 {
-  margin: 0;
-}
-
-.card h2 {
-  font-size: 22px;
-}
-
-.card h3 {
-  font-size: 16px;
-}
-
-.label {
-  color: #ef3f43;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  margin-bottom: 6px;
-}
-
-.centerText {
-  text-align: center;
-  font-weight: 700;
-}
-
-.redText {
-  color: #ef3f43;
-}
-
-.challengeTitle {
-  color: #ef3f43;
-  font-size: 22px;
-  margin-top: 8px;
-}
-
-.dateTitle {
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 1.2;
-  margin: 10px 0 18px;
-  text-align: center;
-  color: #222;
-}
-
-.stampGrid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin: 24px 0 12px;
-}
-
-.stamp {
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 18px;
-}
-
-.stampActive {
-  background: #ef3f43;
-  color: white;
-  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.25);
-}
-
-.stampInactive {
-  background: #eef5fb;
-  color: #b6c6d3;
-  border: 2px dashed #cbd9e4;
-}
-
-.stampSpecial {
-  background: #d6a61f;
-  color: white;
-  border: none;
-}
-
-.stamp small {
-  font-size: 9px;
-}
-
-.note,
-.description {
-  color: #888;
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.smallCard,
-.row,
-.rowBetween {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.rowBetween {
-  justify-content: space-between;
-}
-
-.grow {
-  flex: 1;
-}
-
-.trophy {
-  background: #fff2e8;
-  border-radius: 16px;
-  padding: 14px;
-  font-size: 26px;
-}
-
-.progressBar {
-  height: 8px;
-  background: #eeeeee;
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 8px 0;
-}
-
-.progressBar div {
-  height: 100%;
-  background: #ff6b61;
-  border-radius: 999px;
-}
-
-.pointBadge,
-.timeBadge {
-  background: #ef3f43;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.question {
-  float: right;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 3px solid #bbb;
-  color: #999;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-}
-
-.missionBanner {
-  border: 2px solid #ef3f43;
-  border-radius: 999px;
-  padding: 12px;
-  text-align: center;
-  color: #ef3f43;
-  font-weight: 800;
-  margin: 16px 0;
-}
-
-.pinkBox {
-  background: #ffe5df;
-  border-radius: 16px;
-  padding: 18px;
-  position: relative;
-}
-
-.pinkBox p {
-  margin: 0 0 12px;
-}
-
-.pinkBox h2 {
-  font-size: 22px;
-  line-height: 1.5;
-}
-
-.pinkBox span {
-  position: absolute;
-  right: 18px;
-  top: 20px;
-  font-size: 42px;
-}
-
-.missionList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.missionItem {
-  background: white;
-  border-radius: 18px;
-  padding: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-.number {
-  width: 38px;
-  height: 38px;
+  min-height: 46px;
   border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: #ffe8e8;
-  color: #ef3f43;
-  font-weight: 800;
-}
-
-.clearNum {
-  background: #e4faef;
-  color: #20b868;
-}
-
-.clearLabel,
-.notClearLabel {
-  font-size: 10px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-weight: 700;
-}
-
-.clearLabel {
-  background: #dff8eb;
-  color: #19a35d;
-}
-
-.notClearLabel {
-  background: #eeeeee;
-  color: #999;
-}
-
-.missionItem h3 {
+  color: #999999;
   font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
-.missionItem p {
-  font-size: 11px;
-  color: #999;
+.tab:hover {
+  background: #fff7f7;
 }
 
-.check {
-  color: #18a85d;
-  font-weight: 900;
-  text-align: center;
-}
-
-.check small {
-  display: block;
-  font-size: 8px;
-}
-
-.arrow {
+.activeTab {
   color: #ef3f43;
-  font-size: 24px;
 }
 
-.postButton,
-.joinButton,
-.floatingButton {
+.activeTab::after {
+  position: absolute;
+  right: 22px;
+  bottom: 3px;
+  left: 22px;
+  height: 3px;
+  border-radius: 999px;
   background: #ef3f43;
-  color: white;
-  border: none;
-  font-weight: 800;
+  content: "";
 }
 
-.postButton {
-  border-radius: 14px;
-  padding: 12px 16px;
-  white-space: nowrap;
-}
-
-.filterRow {
-  display: flex;
-  gap: 10px;
-  margin: 16px 0;
-}
-
-.filterRow button {
-  border: none;
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: white;
-  color: #777;
-  font-weight: 700;
-}
-
-.filterRow .filterActive {
-  background: #ef3f43;
-  color: white;
-}
-
-.avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  color: white;
-  font-weight: 800;
-}
-
-.red {
-  background: #ef5959;
-}
-
-.blue {
-  background: #5b8ee8;
-}
-
-.recruit {
-  background: #dff8eb;
-  color: #19a35d;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.tag {
-  display: inline-block;
-  background: #fff0dc;
-  color: #ef8c31;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  margin: 18px 0 10px;
-}
-
-.infoGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 16px 0;
-}
-
-.infoGrid div {
-  background: #f5f5f5;
-  border-radius: 12px;
-  padding: 10px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.teamButtons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.teamButtons button {
-  border-radius: 14px;
-  padding: 14px;
-  font-weight: 800;
-}
-
-.noButton {
-  border: 1px solid #ddd;
-  background: white;
-  color: #777;
-}
-
-.floatingButton {
-  position: fixed;
-  left: calc(50% + 120px);
-  bottom: 92px;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  font-size: 32px;
-  box-shadow: 0 8px 24px rgba(239, 63, 67, 0.4);
+.screenContent {
+  width: 100%;
 }
 
 .bottomNav {
   position: fixed;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
-  width: min(390px, 100%);
-  height: 68px;
-  background: white;
+  z-index: 100;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  text-align: center;
-  align-items: center;
-  font-size: 11px;
-  color: #aaa;
-  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
-  z-index: 100;
+  width: min(390px, 100%);
+  height: 72px;
+  background: #ffffff;
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07);
+  transform: translateX(-50%);
 }
 
-.navActive {
+.bottomNavItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  color: #aaaaaa;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bottomNavIcon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.bottomNavActive {
   color: #ef3f43;
-  font-weight: 800;
+}
+
+@media (max-width: 390px) {
+  .header,
+  .bottomNav {
+    width: 100%;
+  }
+
+  .content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
 }
