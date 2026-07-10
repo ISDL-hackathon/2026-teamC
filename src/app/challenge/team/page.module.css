@@ -1,0 +1,256 @@
+.label {
+  margin: 0 0 6px;
+  color: #ef3f43;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.teamHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.teamHeading h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.teamHeading p {
+  margin: 7px 0 0;
+  color: #888888;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.postButton {
+  flex-shrink: 0;
+  padding: 11px 13px;
+  border: none;
+  border-radius: 13px;
+  background: #ef3f43;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filterRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filterRow::-webkit-scrollbar {
+  display: none;
+}
+
+.filterRow button {
+  flex-shrink: 0;
+  padding: 9px 13px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #777777;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filterRow .activeFilter {
+  background: #ef3f43;
+  color: #ffffff;
+}
+
+.teamCard {
+  margin-bottom: 15px;
+  padding: 19px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  place-items: center;
+}
+
+.redAvatar {
+  background: #ef5959;
+}
+
+.blueAvatar {
+  background: #5b8ee8;
+}
+
+.userInformation {
+  min-width: 0;
+  flex: 1;
+}
+
+.userInformation h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.userInformation p {
+  margin: 4px 0 0;
+  color: #999999;
+  font-size: 11px;
+}
+
+.recruitingBadge {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #dff8eb;
+  color: #19a35d;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.categoryTag {
+  display: inline-block;
+  margin: 17px 0 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff0dc;
+  color: #ef8c31;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.postTitle {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.description {
+  margin: 8px 0 0;
+  color: #777777;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  min-width: 0;
+  padding: 10px 5px;
+  border-radius: 12px;
+  background: #f5f5f5;
+  text-align: center;
+}
+
+.infoIcon {
+  margin-bottom: 3px;
+  font-size: 17px;
+}
+
+.infoItem small {
+  color: #999999;
+  font-size: 9px;
+}
+
+.infoItem strong {
+  max-width: 100%;
+  margin-top: 3px;
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.actionButtons button {
+  padding: 13px 8px;
+  border-radius: 13px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.joinButton {
+  border: none;
+  background: #ef3f43;
+  color: #ffffff;
+}
+
+.declineButton {
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  color: #777777;
+}
+
+.floatingButton {
+  position: fixed;
+  right: max(calc((100vw - 390px) / 2 + 22px), 22px);
+  bottom: 90px;
+  z-index: 50;
+  display: grid;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #ef3f43;
+  color: #ffffff;
+  font-size: 28px;
+  box-shadow: 0 8px 24px rgba(239, 63, 67, 0.38);
+  cursor: pointer;
+  place-items: center;
+}
+
+@media (max-width: 350px) {
+  .teamHeading h2 {
+    font-size: 18px;
+  }
+
+  .postButton {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 11px;
+  }
+
+  .teamCard {
+    padding: 16px;
+  }
+
+  .infoGrid {
+    gap: 5px;
+  }
+}

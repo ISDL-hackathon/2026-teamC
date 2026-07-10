@@ -1,0 +1,252 @@
+.carouselControl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: -4px 0 14px;
+}
+
+.carouselControl button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #aaaaaa;
+  font-size: 21px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  place-items: center;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #dddddd;
+}
+
+.dots .activeDot {
+  width: 20px;
+  border-radius: 999px;
+  background: #ef3f43;
+}
+
+.todayCard,
+.commonCard,
+.seniorCard {
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.todayCard {
+  margin-bottom: 18px;
+  padding: 20px;
+}
+
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  margin: 0 0 6px;
+  color: #ef3f43;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.mainTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.pointBadge {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #ef3f43;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.todayMissionBox {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0 14px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff4f4;
+}
+
+.missionIcon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  font-size: 22px;
+  place-items: center;
+}
+
+.missionText {
+  min-width: 0;
+}
+
+.missionText h3 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.missionText p {
+  margin: 6px 0 0;
+  color: #888888;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.talkButton {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #ef3f43, #ff8069);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px 2px 11px;
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.pinkBadge {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #ffe6e6;
+  color: #ef3f43;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.commonCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 13px;
+  padding: 17px 18px;
+}
+
+.commonIcon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: #fff1ef;
+  font-size: 22px;
+  place-items: center;
+}
+
+.commonCard h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.commonCard p {
+  margin: 6px 0 0;
+  color: #888888;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.seniorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.seniorCard {
+  min-width: 0;
+  padding: 17px 7px;
+  text-align: center;
+}
+
+.seniorIcon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 10px;
+  border-radius: 14px;
+  background: #ef6b5f;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
+  place-items: center;
+}
+
+.seniorCard h3 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seniorCard p {
+  margin: 6px 0 0;
+  overflow: hidden;
+  color: #888888;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 350px) {
+  .todayMissionBox {
+    align-items: flex-start;
+    padding: 15px;
+  }
+
+  .sectionHeading h2 {
+    font-size: 18px;
+  }
+
+  .seniorGrid {
+    gap: 7px;
+  }
+
+  .seniorCard {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+}
