@@ -1,114 +1,130 @@
 import styles from "./page.module.css";
 
-const seniors = [
+const quizOptions = [
   {
-    icon: "佐",
-    name: "佐藤先輩",
-    detail: "音楽・旅行",
+    id: 1,
+    text: "カレー",
   },
   {
-    icon: "山",
-    name: "山田先輩",
-    detail: "筋トレ・ゲーム",
+    id: 2,
+    text: "ラーメン",
   },
   {
-    icon: "鈴",
-    name: "鈴木先輩",
-    detail: "カフェ・読書",
+    id: 3,
+    text: "寿司",
+  },
+  {
+    id: 4,
+    text: "オムライス",
   },
 ];
+
+const earnedStampCount = 4;
+const totalStampCount = 10;
 
 export default function MissionPage() {
   return (
     <>
-      <div className={styles.carouselControl}>
-        <button type="button" aria-label="前のミッション">
-          ‹
-        </button>
-
-        <div className={styles.dots}>
-          <span className={styles.activeDot} />
-          <span />
-          <span />
-        </div>
-
-        <button type="button" aria-label="次のミッション">
-          ›
-        </button>
-      </div>
-
-      <section className={styles.todayCard}>
-        <div className={styles.rowBetween}>
+      <section className={styles.quizCard}>
+        <div className={styles.quizHeader}>
           <div>
-            <p className={styles.label}>TODAY&apos;S MISSION</p>
-            <h2 className={styles.mainTitle}>今日の交流ミッション</h2>
+            <p className={styles.label}>TODAY&apos;S QUIZ</p>
+            <h2 className={styles.mainTitle}>今日の先輩クイズ</h2>
           </div>
 
-          <span className={styles.pointBadge}>+30 pt</span>
+          <span className={styles.dateBadge}>7月8日</span>
         </div>
 
-        <div className={styles.todayMissionBox}>
-          <div className={styles.missionIcon}>👋</div>
+        <div className={styles.seniorProfile}>
+          <div className={styles.seniorIcon}>田</div>
 
-          <div className={styles.missionText}>
-            <h3>田中先輩に話しかけてみよう</h3>
+          <div className={styles.seniorInfo}>
+            <p>大学院2年</p>
+            <h3>田中先輩</h3>
+          </div>
 
-            <p>
-              今日の先輩カードを参考に、気になることを1つ聞いてみよう。
-            </p>
+          
+        </div>
+
+        <p className={styles.quizDescription}>
+          この先輩についての4択クイズに挑戦しよう！
+        </p>
+
+        <div className={styles.questionBox}>
+          <div className={styles.questionTitle}>
+            <span className={styles.questionMark}>Q.</span>
+            <h3>田中先輩の好きな食べ物は？</h3>
+          </div>
+
+          <div className={styles.optionGrid}>
+            {quizOptions.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={styles.optionButton}
+              >
+                <span className={styles.optionNumber}>{option.id}</span>
+                <span>{option.text}</span>
+              </button>
+            ))}
+          </div>
+
+          <button type="button" className={styles.answerButton}>
+            回答する
+          </button>
+        </div>
+      </section>
+
+      <section className={styles.stampCard}>
+        <div className={styles.stampHeader}>
+          <div>
+            <p className={styles.label}>MISSION STAMP</p>
+            <h2 className={styles.stampTitle}>ミッションスタンプ</h2>
+          </div>
+
+          <button
+            type="button"
+            className={styles.helpButton}
+            aria-label="ミッションスタンプの説明"
+          >
+            ?
+          </button>
+        </div>
+
+        <div className={styles.progressArea}>
+          <p>現在の達成数</p>
+
+          <div className={styles.progressCount}>
+            <strong>{earnedStampCount}</strong>
+            <span>/ {totalStampCount}</span>
           </div>
         </div>
 
-        <button type="button" className={styles.talkButton}>
-          話しかけた！
-        </button>
+        <div className={styles.stampGrid}>
+          {Array.from({ length: totalStampCount }, (_, index) => {
+            const stampNumber = index + 1;
+            const isEarned = stampNumber <= earnedStampCount;
+            const isReward = stampNumber === totalStampCount;
+
+            return (
+              <div
+                key={stampNumber}
+                className={`${styles.stamp} ${
+                  isEarned ? styles.earnedStamp : styles.unearnedStamp
+                } ${isReward ? styles.rewardStamp : ""}`}
+              >
+                <span>{stampNumber}</span>
+
+                {isReward && <small>特典</small>}
+              </div>
+            );
+          })}
+        </div>
+
+        <p className={styles.stampNote}>
+          クイズに正解するたびにスタンプが1つたまります
+        </p>
       </section>
-
-      <div className={styles.sectionHeading}>
-        <div>
-          <p className={styles.label}>COMMON POINTS</p>
-          <h2>あなたとの共通点</h2>
-        </div>
-
-        <span className={styles.pinkBadge}>2つ発見</span>
-      </div>
-
-      <section className={styles.commonCard}>
-        <div className={styles.commonIcon}>🎬</div>
-
-        <div>
-          <h3>映画が好き</h3>
-          <p>おすすめの作品について話してみよう</p>
-        </div>
-      </section>
-
-      <section className={styles.commonCard}>
-        <div className={styles.commonIcon}>🍛</div>
-
-        <div>
-          <h3>辛い食べ物が好き</h3>
-          <p>好きなお店やメニューを聞いてみよう</p>
-        </div>
-      </section>
-
-      <div className={styles.sectionHeading}>
-        <div>
-          <p className={styles.label}>THIS WEEK</p>
-          <h2>今週知った先輩</h2>
-        </div>
-
-        <span className={styles.pinkBadge}>3人</span>
-      </div>
-
-      <div className={styles.seniorGrid}>
-        {seniors.map((senior) => (
-          <article key={senior.name} className={styles.seniorCard}>
-            <div className={styles.seniorIcon}>{senior.icon}</div>
-            <h3>{senior.name}</h3>
-            <p>{senior.detail}</p>
-          </article>
-        ))}
-      </div>
     </>
   );
 }

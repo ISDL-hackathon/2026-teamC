@@ -1,252 +1,363 @@
-.carouselControl {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin: -4px 0 14px;
-}
-
-.carouselControl button {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: #ffffff;
-  color: #aaaaaa;
-  font-size: 21px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-  cursor: pointer;
-  place-items: center;
-}
-
-.dots {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #dddddd;
-}
-
-.dots .activeDot {
-  width: 20px;
-  border-radius: 999px;
-  background: #ef3f43;
-}
-
-.todayCard,
-.commonCard,
-.seniorCard {
+.quizCard,
+.stampCard {
   border-radius: 22px;
   background: #ffffff;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
 }
 
-.todayCard {
-  margin-bottom: 18px;
-  padding: 20px;
+.quizCard {
+  margin-bottom: 16px;
+  padding: 18px;
 }
 
-.rowBetween {
+.quizHeader,
+.stampHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
 .label {
-  margin: 0 0 6px;
+  margin: 0 0 5px;
   color: #ef3f43;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 2px;
+  letter-spacing: 1.8px;
 }
 
-.mainTitle {
+.mainTitle,
+.stampTitle {
   margin: 0;
+  color: #222222;
   font-size: 20px;
   font-weight: 800;
+  line-height: 1.3;
 }
 
-.pointBadge {
+.dateBadge {
   flex-shrink: 0;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border-radius: 999px;
-  background: #ef3f43;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.todayMissionBox {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 18px 0 14px;
-  padding: 18px;
-  border-radius: 18px;
-  background: #fff4f4;
-}
-
-.missionIcon {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: #ffffff;
-  font-size: 22px;
-  place-items: center;
-}
-
-.missionText {
-  min-width: 0;
-}
-
-.missionText h3 {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-.missionText p {
-  margin: 6px 0 0;
-  color: #888888;
-  font-size: 11px;
-  line-height: 1.6;
-}
-
-.talkButton {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 14px;
-  background: linear-gradient(90deg, #ef3f43, #ff8069);
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.sectionHeading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 20px 2px 11px;
-}
-
-.sectionHeading h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.pinkBadge {
-  flex-shrink: 0;
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: #ffe6e6;
+  background: #ffe8e8;
   color: #ef3f43;
   font-size: 11px;
   font-weight: 800;
 }
 
-.commonCard {
+.seniorProfile {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 13px;
-  padding: 17px 18px;
-}
-
-.commonIcon {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  flex-shrink: 0;
-  border-radius: 14px;
-  background: #fff1ef;
-  font-size: 22px;
-  place-items: center;
-}
-
-.commonCard h3 {
-  margin: 0;
-  font-size: 15px;
-}
-
-.commonCard p {
-  margin: 6px 0 0;
-  color: #888888;
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.seniorGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.seniorCard {
-  min-width: 0;
-  padding: 17px 7px;
-  text-align: center;
+  gap: 12px;
+  margin-top: 15px;
 }
 
 .seniorIcon {
   display: grid;
-  width: 44px;
-  height: 44px;
-  margin: 0 auto 10px;
-  border-radius: 14px;
-  background: #ef6b5f;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #ef3f43, #ff7869);
   color: #ffffff;
-  font-size: 19px;
+  font-size: 23px;
   font-weight: 800;
   place-items: center;
 }
 
-.seniorCard h3 {
-  margin: 0;
-  overflow: hidden;
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.seniorInfo {
+  min-width: 0;
+  flex: 1;
 }
 
-.seniorCard p {
-  margin: 6px 0 0;
-  overflow: hidden;
+.seniorInfo p {
+  margin: 0 0 2px;
+  color: #999999;
+  font-size: 10px;
+}
+
+.seniorInfo h3 {
+  margin: 0;
+  color: #222222;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+
+
+.quizDescription {
+  margin: 13px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid #f1e5e5;
+  border-radius: 999px;
+  color: #555555;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.questionBox {
+  padding: 15px;
+  border-radius: 18px;
+  background: #fff4f4;
+}
+
+.questionTitle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.questionMark {
+  flex-shrink: 0;
+  color: #ef3f43;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.questionTitle h3 {
+  margin: 0;
+  color: #222222;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.optionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.optionButton {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 50px;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid #f0dddd;
+  border-radius: 15px;
+  background: #ffffff;
+  color: #333333;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.optionButton:hover {
+  border-color: #ef3f43;
+  background: #fffafa;
+}
+
+.optionButton:active {
+  transform: scale(0.98);
+}
+
+.optionNumber {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ef3f43;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  place-items: center;
+}
+
+.answerButton {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #ef3f43, #ff7566);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.answerButton:hover {
+  opacity: 0.92;
+}
+
+.answerButton:active {
+  transform: scale(0.99);
+}
+
+.stampCard {
+  padding: 18px;
+}
+
+.helpButton {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 2px solid #bbbbbb;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #999999;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  place-items: center;
+}
+
+.progressArea {
+  margin-top: 13px;
+  text-align: center;
+}
+
+.progressArea p {
+  margin: 0 0 2px;
+  color: #555555;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.progressCount {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+}
+
+.progressCount strong {
+  color: #ef3f43;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.progressCount span {
+  color: #222222;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.stampGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.stamp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.earnedStamp {
+  border: 3px solid #ff837b;
+  background: #ef3f43;
+  color: #ffffff;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.18),
+    0 4px 10px rgba(239, 63, 67, 0.18);
+}
+
+.unearnedStamp {
+  border: 2px dashed #cbd9e4;
+  background: #eef5fb;
+  color: #b3c1cc;
+}
+
+.rewardStamp {
+  border: none;
+  background: #d8aa22;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(216, 170, 34, 0.22);
+}
+
+.rewardStamp small {
+  margin-top: 1px;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.stampNote {
+  margin: 14px 0 0;
   color: #888888;
   font-size: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.6;
+  text-align: center;
 }
 
 @media (max-width: 350px) {
-  .todayMissionBox {
-    align-items: flex-start;
+  .quizCard,
+  .stampCard {
     padding: 15px;
   }
 
-  .sectionHeading h2 {
+  .mainTitle,
+  .stampTitle {
     font-size: 18px;
   }
 
-  .seniorGrid {
+  .seniorIcon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .seniorInfo h3 {
+    font-size: 16px;
+  }
+
+  .pointBadge {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .questionBox {
+    padding: 13px;
+  }
+
+  .optionGrid {
     gap: 7px;
   }
 
-  .seniorCard {
-    padding-right: 4px;
-    padding-left: 4px;
+  .optionButton {
+    min-height: 46px;
+    gap: 7px;
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  .optionNumber {
+    width: 25px;
+    height: 25px;
+    font-size: 11px;
+  }
+
+  .stampGrid {
+    gap: 7px;
+  }
+
+  .stamp {
+    font-size: 13px;
   }
 }
