@@ -23,6 +23,8 @@ const earnedStampCount = 4;
 const totalStampCount = 10;
 
 export default function MissionPage() {
+    const today = new Date();
+    const formattedDate = `${today.getMonth() + 1}月${today.getDate()}日`;
   return (
     <>
       <section className={styles.quizCard}>
@@ -32,7 +34,7 @@ export default function MissionPage() {
             <h2 className={styles.mainTitle}>今日の先輩クイズ</h2>
           </div>
 
-          <span className={styles.dateBadge}>7月8日</span>
+          <span className={styles.dateBadge}>{formattedDate}</span>
         </div>
 
         <div className={styles.seniorProfile}>
