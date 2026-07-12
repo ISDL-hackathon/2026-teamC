@@ -19,6 +19,11 @@ type DailyQuizState = {
   isCorrect: boolean | null;
 };
 
+type StampState = {
+  month: string;
+  count: number;
+};
+
 const quizzes: Quiz[] = [
   {
     id: 1,
@@ -34,9 +39,9 @@ const quizzes: Quiz[] = [
   },
 ];
 
-const STORAGE_KEY = "mission-daily-quiz";
+const QUIZ_STORAGE_KEY = "mission-daily-quiz";
+const STAMP_STORAGE_KEY = "mission-stamp-count";
 
-const earnedStampCount = 4;
 const totalStampCount = 10;
 
 /**
@@ -58,6 +63,17 @@ function getFormattedDate() {
   const today = new Date();
 
   return `${today.getMonth() + 1}月${today.getDate()}日`;
+}
+
+/**
+ * 現在の年月を「YYYY-MM」の形式で取得します。
+ */
+function getCurrentMonthKey() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
 }
 
 /**
@@ -88,13 +104,27 @@ function shuffleOptions(options: string[]) {
   return shuffledOptions;
 }
 
+/**
+ * localStorageから読み込んだスタンプ数を
+ * 0〜10の範囲に収めます。
+ */
+function normalizeStampCount(value: number) {
+  return Math.min(Math.max(value, 0), totalStampCount);
+}
+
 export default function MissionPage() {
   const [dailyQuizState, setDailyQuizState] =
     useState<DailyQuizState | null>(null);
 
   const [formattedDate, setFormattedDate] = useState("");
   const [isReady, setIsReady] = useState(false);
+
+  const [earnedStampCount, setEarnedStampCount] = useState(0);
+
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showStampComplete, setShowStampComplete] = useState(false);
+
+  const currentMonth = new Date().getMonth() + 1;
 
   useEffect(() => {
     const todayKey = getTodayKey();
@@ -102,8 +132,45 @@ export default function MissionPage() {
 
     setFormattedDate(todayLabel);
 
+    /*
+     * 保存済みのスタンプ数を読み込みます。
+     * 保存データがなければ0個から開始します。
+     */
     try {
-      const savedData = localStorage.getItem(STORAGE_KEY);
+     const savedStampData = localStorage.getItem(STAMP_STORAGE_KEY);
+
+const currentMonth = getCurrentMonthKey();
+
+if (savedStampData) {
+  const parsedStampData = JSON.parse(savedStampData) as StampState;
+
+  if (parsedStampData.month === currentMonth) {
+    setEarnedStampCount(
+      normalizeStampCount(parsedStampData.count),
+    );
+  } else {
+    const newStampState: StampState = {
+      month: currentMonth,
+      count: 0,
+    };
+
+    localStorage.setItem(
+      STAMP_STORAGE_KEY,
+      JSON.stringify(newStampState),
+    );
+
+    setEarnedStampCount(0);
+  }
+}
+    } catch (error) {
+      console.error("スタンプ情報を読み込めませんでした。", error);
+    }
+
+    /*
+     * 今日のクイズ情報を読み込みます。
+     */
+    try {
+      const savedData = localStorage.getItem(QUIZ_STORAGE_KEY);
 
       if (savedData) {
         const parsedData = JSON.parse(savedData) as Partial<DailyQuizState>;
@@ -133,7 +200,7 @@ export default function MissionPage() {
           };
 
           localStorage.setItem(
-            STORAGE_KEY,
+            QUIZ_STORAGE_KEY,
             JSON.stringify(restoredState),
           );
 
@@ -146,6 +213,10 @@ export default function MissionPage() {
       console.error("保存されたクイズ情報を読み込めませんでした。", error);
     }
 
+    /*
+     * 今日のクイズがまだない場合は、
+     * 新しく問題と選択肢の順番を決めます。
+     */
     const selectedQuiz = getRandomQuiz();
 
     const newDailyQuizState: DailyQuizState = {
@@ -158,7 +229,7 @@ export default function MissionPage() {
     };
 
     localStorage.setItem(
-      STORAGE_KEY,
+      QUIZ_STORAGE_KEY,
       JSON.stringify(newDailyQuizState),
     );
 
@@ -196,28 +267,130 @@ export default function MissionPage() {
     const isCorrect =
       dailyQuizState.selectedAnswer === currentQuiz.correctAnswer;
 
-    const updatedState: DailyQuizState = {
+    const updatedQuizState: DailyQuizState = {
       ...dailyQuizState,
       answered: true,
       isCorrect,
     };
 
-    setDailyQuizState(updatedState);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
+    setDailyQuizState(updatedQuizState);
 
-    if (isCorrect) {
-      setShowCelebration(true);
+    localStorage.setItem(
+      QUIZ_STORAGE_KEY,
+      JSON.stringify(updatedQuizState),
+    );
+
+    /*
+     * 正解した場合だけスタンプを1個増やします。
+     */
+   if (isCorrect) {
+  const nextStampCount = normalizeStampCount(
+    earnedStampCount + 1,
+  );
+
+  setEarnedStampCount(nextStampCount);
+
+ const stampState: StampState = {
+  month: getCurrentMonthKey(),
+  count: nextStampCount,
+};
+
+localStorage.setItem(
+  STAMP_STORAGE_KEY,
+  JSON.stringify(stampState),
+);
+
+  // まず通常の正解演出を表示
+  setShowCelebration(true);
+
+  window.setTimeout(() => {
+    setShowCelebration(false);
+
+    // 正解演出が終わったあと、
+    // 10個達成ならコンプリート演出
+    if (
+      earnedStampCount < totalStampCount &&
+      nextStampCount === totalStampCount
+    ) {
+      setShowStampComplete(true);
 
       window.setTimeout(() => {
-        setShowCelebration(false);
-      }, 2500);
+        setShowStampComplete(false);
+      }, 3500);
     }
+  }, 2500);
+}
   };
 
+  /**
+   * 開発用：
+   * 今日のクイズだけをリセットします。
+   * スタンプ数は変更しません。
+   */
   const handleResetQuiz = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(QUIZ_STORAGE_KEY);
     window.location.reload();
   };
+
+  /**
+   * 開発用：
+   * 10個達成の確認ができるように、
+   * スタンプ数を9個にします。
+   */
+  const handleSetNineStamps = () => {
+    setEarnedStampCount(9);
+    localStorage.setItem(
+  STAMP_STORAGE_KEY,
+  JSON.stringify({
+    month: getCurrentMonthKey(),
+    count: 9,
+  }),
+);
+  };
+
+  /**
+   * 開発用：
+   * スタンプを0個に戻します。
+   */
+  const handleResetStamps = () => {
+    setEarnedStampCount(0);
+    localStorage.setItem(
+  STAMP_STORAGE_KEY,
+  JSON.stringify({
+    month: getCurrentMonthKey(),
+    count: 0,
+                    }),
+    );
+         };
+
+         /**
+ * 開発用：
+ * 保存されている月を翌月に変更し、
+ * 月が変わった状態を再現します。
+ */
+const handleNextMonth = () => {
+  const today = new Date();
+
+  const nextMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    1,
+  );
+
+  const monthKey = `${nextMonth.getFullYear()}-${String(
+    nextMonth.getMonth() + 1,
+  ).padStart(2, "0")}`;
+
+  localStorage.setItem(
+    STAMP_STORAGE_KEY,
+    JSON.stringify({
+      month: monthKey,
+      count: earnedStampCount,
+    }),
+  );
+
+  window.location.reload();
+};
 
   const getOptionClassName = (option: string) => {
     if (!dailyQuizState || !currentQuiz) {
@@ -279,8 +452,47 @@ export default function MissionPage() {
           <div className={styles.celebrationContent}>
             <div className={styles.bigEmoji}>🎉 👏 🎉</div>
             <h1>正解！</h1>
-            <p>田中先輩について詳しくなりました！</p>
+            <p>スタンプを1個獲得しました！</p>
             <div className={styles.sparkles}>✨ Congratulations! ✨</div>
+          </div>
+        </div>
+      )}
+
+      {showStampComplete && (
+        <div
+          className={styles.completeOverlay}
+          role="status"
+          aria-live="polite"
+        >
+          <div className={styles.completeConfetti} aria-hidden="true">
+            <span>🎉</span>
+            <span>✨</span>
+            <span>🎊</span>
+            <span>⭐</span>
+            <span>🏆</span>
+            <span>🎉</span>
+            <span>✨</span>
+            <span>🎊</span>
+            <span>⭐</span>
+            <span>🏆</span>
+          </div>
+
+          <div className={styles.completeContent}>
+            <p className={styles.completeLabel}>MISSION COMPLETE</p>
+
+            <div className={styles.trophyEmoji}>🏆</div>
+
+            <h1>10個達成！</h1>
+
+            <p>
+              ミッションスタンプを
+              <br />
+              すべて集めました！
+            </p>
+
+            <div className={styles.completeMessage}>
+              🎉 コンプリートおめでとう！ 🎉
+            </div>
           </div>
         </div>
       )}
@@ -333,8 +545,10 @@ export default function MissionPage() {
           {dailyQuizState.answered && dailyQuizState.isCorrect && (
             <div className={`${styles.resultBox} ${styles.correctResult}`}>
               <div className={styles.celebration}>👏 🎉</div>
+
               <strong>正解です！</strong>
-              <p>田中先輩について、また1つ詳しくなりました！</p>
+
+              <p>スタンプを1個獲得しました！</p>
 
               <p className={styles.tomorrowMessage}>
                 また明日のクイズにも挑戦してね！
@@ -387,15 +601,12 @@ export default function MissionPage() {
           <div>
             <p className={styles.label}>MISSION STAMP</p>
             <h2 className={styles.stampTitle}>ミッションスタンプ</h2>
+            <p className={styles.stampMonth}>
+                    {currentMonth}月のスタンプカード
+                </p>
           </div>
 
-          <button
-            type="button"
-            className={styles.helpButton}
-            aria-label="ミッションスタンプの説明"
-          >
-            ?
-          </button>
+        
         </div>
 
         <div className={styles.progressArea}>
@@ -413,16 +624,28 @@ export default function MissionPage() {
             const isEarned = stampNumber <= earnedStampCount;
             const isReward = stampNumber === totalStampCount;
 
+            let stampClassName = `${styles.stamp} ${
+              isEarned ? styles.earnedStamp : styles.unearnedStamp
+            }`;
+
+            if (isReward && isEarned) {
+              stampClassName += ` ${styles.rewardStamp}`;
+            }
+
+            if (isReward && !isEarned) {
+              stampClassName += ` ${styles.rewardStampLocked}`;
+            }
+
             return (
               <div
                 key={stampNumber}
-                className={`${styles.stamp} ${
-                  isEarned ? styles.earnedStamp : styles.unearnedStamp
-                } ${isReward ? styles.rewardStamp : ""}`}
+                className={stampClassName}
               >
                 <span>{stampNumber}</span>
 
-                {isReward && <small>特典</small>}
+                {isReward && (
+                  <small>{isEarned ? "達成" : "特典"}</small>
+                )}
               </div>
             );
           })}
@@ -431,6 +654,29 @@ export default function MissionPage() {
         <p className={styles.stampNote}>
           クイズに正解するたびにスタンプが1つたまります
         </p>
+
+        <div className={styles.stampDevelopmentTools}>
+  <button
+    type="button"
+    onClick={handleSetNineStamps}
+  >
+    開発用：9個にする
+  </button>
+
+  <button
+    type="button"
+    onClick={handleResetStamps}
+  >
+    開発用：0個に戻す
+  </button>
+
+  <button
+    type="button"
+    onClick={handleNextMonth}
+  >
+    開発用：翌月にする
+  </button>
+</div>
       </section>
     </>
   );
