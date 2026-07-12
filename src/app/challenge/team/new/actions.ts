@@ -80,7 +80,6 @@ export async function createEvent(
     );
   }
 
-  // datetime-localの値を日本時間として変換
   const eventAt = new Date(
     `${eventAtValue}:00+09:00`,
   );
@@ -91,16 +90,26 @@ export async function createEvent(
 
   if (
     Number.isNaN(eventAt.getTime()) ||
-    Number.isNaN(recruitmentDeadline.getTime())
+    Number.isNaN(
+      recruitmentDeadline.getTime(),
+    )
   ) {
     redirectWithError(
       "日時を正しく入力してください。",
     );
   }
 
-  if (eventAt <= new Date()) {
+  const now = new Date();
+
+  if (eventAt <= now) {
     redirectWithError(
       "開催日時は現在より後にしてください。",
+    );
+  }
+
+  if (recruitmentDeadline <= now) {
+    redirectWithError(
+      "募集締切は現在より後にしてください。",
     );
   }
 
@@ -110,7 +119,10 @@ export async function createEvent(
     );
   }
 
-  const { error } = await supabase
+  const {
+    data: createdEvent,
+    error: eventError,
+  } = await supabase
     .from("events")
     .insert({
       creator_id: user.id,
@@ -121,13 +133,52 @@ export async function createEvent(
       recruitment_deadline:
         recruitmentDeadline.toISOString(),
       capacity: capacityValue,
-    });
+    })
+    .select("id")
+    .single();
 
-  if (error) {
-    console.error("イベント投稿エラー:", error);
+  if (eventError || !createdEvent) {
+    console.error(
+      "イベント投稿エラー:",
+      eventError,
+    );
 
     redirectWithError(
       "イベントを投稿できませんでした。",
+    );
+  }
+
+  const { error: participantError } =
+    await supabase
+      .from("event_participants")
+      .upsert(
+        {
+          event_id: createdEvent.id,
+          user_id: user.id,
+          status: "joined",
+        },
+        {
+          onConflict: "event_id,user_id",
+        },
+      );
+
+  if (participantError) {
+    console.error(
+      "投稿者の参加登録エラー:",
+      participantError,
+    );
+
+    await supabase
+      .from("events")
+      .update({
+        deleted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", createdEvent.id)
+      .eq("creator_id", user.id);
+
+    redirectWithError(
+      "投稿者の参加情報を登録できませんでした。",
     );
   }
 

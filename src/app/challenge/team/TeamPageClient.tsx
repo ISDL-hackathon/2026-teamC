@@ -38,9 +38,7 @@ export type TeamEvent = {
   capacity: number;
   created_at: string;
   creator: Profile | Profile[] | null;
-  participants:
-    | EventParticipant[]
-    | null;
+  participants: EventParticipant[] | null;
 };
 
 type TeamPageClientProps = {
@@ -68,14 +66,11 @@ export default function TeamPageClient({
       const joinedParticipants =
         participants.filter(
           (participant) =>
-            participant.status ===
-            "joined",
+            participant.status === "joined",
         );
 
       const now = new Date();
-      const eventAt = new Date(
-        event.event_at,
-      );
+      const eventAt = new Date(event.event_at);
       const deadline = new Date(
         event.recruitment_deadline,
       );
@@ -103,13 +98,10 @@ export default function TeamPageClient({
         (participant) =>
           participant.user_id ===
             currentUserId &&
-          participant.status ===
-            "joined",
+          participant.status === "joined",
       );
 
-      if (
-        activeTab === "recruiting"
-      ) {
+      if (activeTab === "recruiting") {
         return isRecruiting;
       }
 
@@ -117,9 +109,7 @@ export default function TeamPageClient({
         return isClosed;
       }
 
-      return (
-        !isEventFinished && isJoined
-      );
+      return !isEventFinished && isJoined;
     });
   }, [
     activeTab,
@@ -219,9 +209,7 @@ export default function TeamPageClient({
           <TeamPostCard
             key={event.id}
             event={event}
-            currentUserId={
-              currentUserId
-            }
+            currentUserId={currentUserId}
           />
         ))
       )}
@@ -248,10 +236,13 @@ function TeamPostCard({
     startDeleteTransition,
   ] = useTransition();
 
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
   const [
-    errorMessage,
-    setErrorMessage,
-  ] = useState("");
+    isParticipantsModalOpen,
+    setIsParticipantsModalOpen,
+  ] = useState(false);
 
   const creator = getSingleProfile(
     event.creator,
@@ -284,10 +275,7 @@ function TeamPostCard({
     event.creator_id === currentUserId;
 
   const now = new Date();
-
-  const eventAt = new Date(
-    event.event_at,
-  );
+  const eventAt = new Date(event.event_at);
 
   const deadline = new Date(
     event.recruitment_deadline,
@@ -307,6 +295,10 @@ function TeamPostCard({
     !isEventFinished &&
     !isDeadlinePassed &&
     !isFull;
+
+  const isClosed =
+    !isEventFinished &&
+    (isDeadlinePassed || isFull);
 
   const remainingCapacity = Math.max(
     event.capacity -
@@ -338,6 +330,21 @@ function TeamPostCard({
   const handleParticipation = (
     status: "joined" | "declined",
   ) => {
+    if (
+      status === "declined" &&
+      isJoined &&
+      isClosed
+    ) {
+      const shouldDecline =
+        window.confirm(
+          "募集終了後に不参加へ変更すると、再び参加することはできません。\n不参加に変更しますか？",
+        );
+
+      if (!shouldDecline) {
+        return;
+      }
+    }
+
     setErrorMessage("");
 
     startParticipationTransition(
@@ -387,292 +394,517 @@ function TeamPostCard({
   };
 
   return (
-    <article className={styles.teamCard}>
-      <div className={styles.userRow}>
-        <div
-          className={`${styles.avatar} ${styles.redAvatar}`}
-        >
-          {creator?.avatar_url ? (
-            <img
-              src={creator.avatar_url}
-              alt={creator.nickname}
-            />
-          ) : (
-            creatorIcon
-          )}
-        </div>
-
-        <div
-          className={
-            styles.userInformation
-          }
-        >
-          <h3>
-            {creator?.nickname ??
-              "ユーザー"}
-          </h3>
-
-          <p>{postedDate}に投稿</p>
-        </div>
-
-        <span
-          className={
-            isRecruiting
-              ? styles.recruitingBadge
-              : styles.closedBadge
-          }
-        >
-          {isRecruiting
-            ? "募集中"
-            : "募集済み"}
-        </span>
-      </div>
-
-      {isOwner && (
-        <div
-          className={styles.ownerActions}
-        >
-          <Link
-            href={`/challenge/team/${event.id}/edit`}
-            className={styles.editButton}
+    <>
+      <article className={styles.teamCard}>
+        <div className={styles.userRow}>
+          <div
+            className={`${styles.avatar} ${styles.redAvatar}`}
           >
-            編集
-          </Link>
+            {creator?.avatar_url ? (
+              <img
+                src={creator.avatar_url}
+                alt={creator.nickname}
+              />
+            ) : (
+              creatorIcon
+            )}
+          </div>
 
+          <div
+            className={
+              styles.userInformation
+            }
+          >
+            <h3>
+              {creator?.nickname ??
+                "ユーザー"}
+            </h3>
+
+            <p>{postedDate}に投稿</p>
+          </div>
+
+          <span
+            className={
+              isRecruiting
+                ? styles.recruitingBadge
+                : styles.closedBadge
+            }
+          >
+            {isRecruiting
+              ? "募集中"
+              : "募集済み"}
+          </span>
+        </div>
+
+        {isOwner && (
+          <div
+            className={
+              styles.ownerActions
+            }
+          >
+            <Link
+              href={`/challenge/team/${event.id}/edit`}
+              className={
+                styles.editButton
+              }
+            >
+              編集
+            </Link>
+
+            <button
+              type="button"
+              className={
+                styles.deleteButton
+              }
+              onClick={handleDelete}
+              disabled={isDeletePending}
+            >
+              {isDeletePending
+                ? "削除中..."
+                : "削除"}
+            </button>
+          </div>
+        )}
+
+        <h2 className={styles.postTitle}>
+          {event.title}
+        </h2>
+
+        {event.comment && (
+          <p
+            className={
+              styles.description
+            }
+          >
+            {event.comment}
+          </p>
+        )}
+
+        <div className={styles.infoGrid}>
+          <div
+            className={styles.infoItem}
+          >
+            <span
+              className={
+                styles.infoIcon
+              }
+            >
+              🕘
+            </span>
+
+            <small>時間</small>
+
+            <strong>
+              {formattedEventDate}
+            </strong>
+          </div>
+
+          <div
+            className={styles.infoItem}
+          >
+            <span
+              className={
+                styles.infoIcon
+              }
+            >
+              📍
+            </span>
+
+            <small>場所</small>
+
+            <strong>
+              {event.location}
+            </strong>
+          </div>
+
+          <div
+            className={styles.infoItem}
+          >
+            <span
+              className={
+                styles.infoIcon
+              }
+            >
+              👥
+            </span>
+
+            <small>参加者</small>
+
+            <strong>
+              {joinedParticipants.length} /{" "}
+              {event.capacity}人
+            </strong>
+          </div>
+        </div>
+
+        <div
+          className={
+            styles.participantArea
+          }
+        >
           <button
             type="button"
             className={
-              styles.deleteButton
+              styles.participantListButton
             }
-            onClick={handleDelete}
-            disabled={isDeletePending}
+            onClick={() =>
+              setIsParticipantsModalOpen(
+                true,
+              )
+            }
+            aria-label="参加者一覧を表示する"
           >
-            {isDeletePending
-              ? "削除中..."
-              : "削除"}
-          </button>
-        </div>
-      )}
-
-      <h2 className={styles.postTitle}>
-        {event.title}
-      </h2>
-
-      {event.comment && (
-        <p
-          className={styles.description}
-        >
-          {event.comment}
-        </p>
-      )}
-
-      <div className={styles.infoGrid}>
-        <div
-          className={styles.infoItem}
-        >
-          <span
-            className={styles.infoIcon}
-          >
-            🕘
-          </span>
-
-          <small>時間</small>
-
-          <strong>
-            {formattedEventDate}
-          </strong>
-        </div>
-
-        <div
-          className={styles.infoItem}
-        >
-          <span
-            className={styles.infoIcon}
-          >
-            📍
-          </span>
-
-          <small>場所</small>
-
-          <strong>
-            {event.location}
-          </strong>
-        </div>
-
-        <div
-          className={styles.infoItem}
-        >
-          <span
-            className={styles.infoIcon}
-          >
-            👥
-          </span>
-
-          <small>参加者</small>
-
-          <strong>
-            {joinedParticipants.length} /{" "}
-            {event.capacity}人
-          </strong>
-        </div>
-      </div>
-
-      <div
-        className={styles.participantArea}
-      >
-        <div
-          className={
-            styles.participantIcons
-          }
-        >
-          {joinedParticipants
-            .slice(0, 3)
-            .map(
-              (
-                participant,
-                index,
-              ) => {
-                const profile =
-                  getSingleProfile(
-                    participant.profile,
-                  );
-
-                const participantIcon =
-                  profile?.selected_icon ??
-                  profile?.nickname?.slice(
-                    0,
-                    1,
-                  ) ??
-                  "👤";
-
-                return (
-                  <div
-                    key={
-                      participant.id
-                    }
-                    className={`${styles.participantAvatar} ${
-                      index === 0
-                        ? styles.participantAvatarRed
-                        : index === 1
-                          ? styles.participantAvatarBlue
-                          : styles.participantAvatarGreen
-                    }`}
-                    title={
-                      profile?.nickname ??
-                      "参加者"
-                    }
-                  >
-                    {profile?.avatar_url ? (
-                      <img
-                        src={
-                          profile.avatar_url
-                        }
-                        alt={
-                          profile.nickname
-                        }
-                      />
-                    ) : (
-                      participantIcon
-                    )}
-                  </div>
-                );
-              },
-            )}
-
-          {joinedParticipants.length >
-            3 && (
             <div
-              className={`${styles.participantAvatar} ${styles.moreAvatar}`}
-            >
-              +
-              {joinedParticipants.length -
-                3}
-            </div>
-          )}
-
-          {joinedParticipants.length ===
-            0 && (
-            <span
               className={
-                styles.noParticipants
+                styles.participantIcons
               }
             >
-              まだ参加者はいません
-            </span>
-          )}
+              {joinedParticipants
+                .slice(0, 3)
+                .map(
+                  (
+                    participant,
+                    index,
+                  ) => {
+                    const profile =
+                      getSingleProfile(
+                        participant.profile,
+                      );
+
+                    const participantIcon =
+                      profile?.selected_icon ??
+                      profile?.nickname?.slice(
+                        0,
+                        1,
+                      ) ??
+                      "👤";
+
+                    return (
+                      <div
+                        key={
+                          participant.id
+                        }
+                        className={`${styles.participantAvatar} ${
+                          index === 0
+                            ? styles.participantAvatarRed
+                            : index === 1
+                              ? styles.participantAvatarBlue
+                              : styles.participantAvatarGreen
+                        }`}
+                      >
+                        {profile?.avatar_url ? (
+                          <img
+                            src={
+                              profile.avatar_url
+                            }
+                            alt={
+                              profile.nickname
+                            }
+                          />
+                        ) : (
+                          participantIcon
+                        )}
+                      </div>
+                    );
+                  },
+                )}
+
+              {joinedParticipants.length >
+                3 && (
+                <div
+                  className={`${styles.participantAvatar} ${styles.moreAvatar}`}
+                >
+                  +
+                  {joinedParticipants.length -
+                    3}
+                </div>
+              )}
+
+              {joinedParticipants.length ===
+                0 && (
+                <span
+                  className={
+                    styles.noParticipants
+                  }
+                >
+                  まだ参加者はいません
+                </span>
+              )}
+            </div>
+          </button>
+
+          <p
+            className={
+              styles.remainingText
+            }
+          >
+            {isEventFinished
+              ? "イベントは終了しました"
+              : isClosed
+                ? "募集は終了しました"
+                : `あと${remainingCapacity}人まで参加できます`}
+          </p>
         </div>
 
-        <p
+        {errorMessage && (
+          <p
+            className={
+              styles.errorMessage
+            }
+          >
+            {errorMessage}
+          </p>
+        )}
+
+        {!isOwner && isRecruiting && (
+          <div
+            className={
+              styles.actionButtons
+            }
+          >
+            <button
+              type="button"
+              className={`${styles.joinButton} ${
+                isJoined
+                  ? styles.joinButtonActive
+                  : ""
+              }`}
+              onClick={() =>
+                handleParticipation(
+                  "joined",
+                )
+              }
+              disabled={
+                isParticipationPending
+              }
+            >
+              {isParticipationPending
+                ? "更新中..."
+                : isJoined
+                  ? "✓ 参加中"
+                  : "✓ 参加する"}
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.declineButton} ${
+                isDeclined
+                  ? styles.declineButtonActive
+                  : ""
+              }`}
+              onClick={() =>
+                handleParticipation(
+                  "declined",
+                )
+              }
+              disabled={
+                isParticipationPending
+              }
+            >
+              {isParticipationPending
+                ? "更新中..."
+                : isDeclined
+                  ? "× 不参加"
+                  : "× 不参加にする"}
+            </button>
+          </div>
+        )}
+
+        {!isOwner &&
+          isClosed &&
+          isJoined && (
+            <div
+              className={
+                styles.closedActionArea
+              }
+            >
+              <p>
+                募集終了後は、不参加への変更のみできます。
+              </p>
+
+              <button
+                type="button"
+                className={
+                  styles.closedDeclineButton
+                }
+                onClick={() =>
+                  handleParticipation(
+                    "declined",
+                  )
+                }
+                disabled={
+                  isParticipationPending
+                }
+              >
+                {isParticipationPending
+                  ? "更新中..."
+                  : "× 不参加に変更する"}
+              </button>
+            </div>
+          )}
+      </article>
+
+      {isParticipantsModalOpen && (
+        <div
           className={
-            styles.remainingText
+            styles.modalBackdrop
           }
-        >
-          {isEventFinished
-            ? "イベントは終了しました"
-            : remainingCapacity > 0
-              ? `あと${remainingCapacity}人まで参加できます`
-              : "募集人数に達しました"}
-        </p>
-      </div>
-
-      {errorMessage && (
-        <p
-          className={styles.errorMessage}
-        >
-          {errorMessage}
-        </p>
-      )}
-
-      <div
-        className={styles.actionButtons}
-      >
-        <button
-          type="button"
-          className={`${styles.joinButton} ${
-            isJoined
-              ? styles.joinButtonActive
-              : ""
-          }`}
           onClick={() =>
-            handleParticipation("joined")
-          }
-          disabled={
-            isParticipationPending ||
-            (!isJoined &&
-              !isRecruiting)
-          }
-        >
-          {isParticipationPending
-            ? "更新中..."
-            : isJoined
-              ? "✓ 参加中"
-              : "✓ 参加する"}
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.declineButton} ${
-            isDeclined
-              ? styles.declineButtonActive
-              : ""
-          }`}
-          onClick={() =>
-            handleParticipation(
-              "declined",
+            setIsParticipantsModalOpen(
+              false,
             )
           }
-          disabled={
-            isParticipationPending
-          }
         >
-          {isParticipationPending
-            ? "更新中..."
-            : isDeclined
-              ? "× 不参加"
-              : "× 不参加にする"}
-        </button>
-      </div>
-    </article>
+          <div
+            className={
+              styles.participantsModal
+            }
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`participants-title-${event.id}`}
+            onClick={(clickEvent) =>
+              clickEvent.stopPropagation()
+            }
+          >
+            <div
+              className={
+                styles.modalHeader
+              }
+            >
+              <div>
+                <p
+                  className={
+                    styles.modalLabel
+                  }
+                >
+                  PARTICIPANTS
+                </p>
+
+                <h2
+                  id={`participants-title-${event.id}`}
+                >
+                  参加者一覧
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                className={
+                  styles.modalCloseButton
+                }
+                onClick={() =>
+                  setIsParticipantsModalOpen(
+                    false,
+                  )
+                }
+                aria-label="参加者一覧を閉じる"
+              >
+                ×
+              </button>
+            </div>
+
+            <p
+              className={
+                styles.modalCount
+              }
+            >
+              {joinedParticipants.length} /{" "}
+              {event.capacity}人が参加予定です
+            </p>
+
+            <div
+              className={
+                styles.participantList
+              }
+            >
+              {joinedParticipants.length ===
+              0 ? (
+                <p
+                  className={
+                    styles.emptyParticipantList
+                  }
+                >
+                  まだ参加者はいません。
+                </p>
+              ) : (
+                joinedParticipants.map(
+                  (participant) => {
+                    const profile =
+                      getSingleProfile(
+                        participant.profile,
+                      );
+
+                    const participantIcon =
+                      profile?.selected_icon ??
+                      profile?.nickname?.slice(
+                        0,
+                        1,
+                      ) ??
+                      "👤";
+
+                    return (
+                      <div
+                        key={
+                          participant.id
+                        }
+                        className={
+                          styles.participantListItem
+                        }
+                      >
+                        <div
+                          className={
+                            styles.modalParticipantAvatar
+                          }
+                        >
+                          {profile?.avatar_url ? (
+                            <img
+                              src={
+                                profile.avatar_url
+                              }
+                              alt={
+                                profile.nickname
+                              }
+                            />
+                          ) : (
+                            participantIcon
+                          )}
+                        </div>
+
+                        <span>
+                          {profile?.nickname ??
+                            "参加者"}
+                        </span>
+
+                        {participant.user_id ===
+                          event.creator_id && (
+                          <small>
+                            主催者
+                          </small>
+                        )}
+                      </div>
+                    );
+                  },
+                )
+              )}
+            </div>
+
+            <button
+              type="button"
+              className={
+                styles.modalBottomButton
+              }
+              onClick={() =>
+                setIsParticipantsModalOpen(
+                  false,
+                )
+              }
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

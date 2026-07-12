@@ -16,6 +16,23 @@ export default async function TeamPage() {
     redirect("/login");
   }
 
+  /*
+   * 開催日時を過ぎたイベントを削除する。
+   *
+   * 関連するevent_participantsも、
+   * Supabase側の関数内で先に削除される。
+   */
+  const { error: cleanupError } = await supabase.rpc(
+    "cleanup_expired_events",
+  );
+
+  if (cleanupError) {
+    console.error(
+      "期限切れイベント削除エラー:",
+      cleanupError,
+    );
+  }
+
   const { data, error } = await supabase
     .from("events")
     .select(`
@@ -47,14 +64,21 @@ export default async function TeamPage() {
       )
     `)
     .is("deleted_at", null)
-    .order("event_at", { ascending: true });
+    .order("event_at", {
+      ascending: true,
+    });
 
   if (error) {
-    console.error("イベント取得エラー:", error);
+    console.error(
+      "イベント取得エラー:",
+      error,
+    );
 
     return (
       <section className={styles.messageCard}>
-        <p>イベントを取得できませんでした。</p>
+        <p>
+          イベントを取得できませんでした。
+        </p>
       </section>
     );
   }
