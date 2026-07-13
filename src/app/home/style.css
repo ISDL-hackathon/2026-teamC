@@ -432,3 +432,20 @@ button {
   line-height: 1.4;
   font-weight: 500;
 }
+
+.bottomNavIcon {
+  display: block;
+  width: 25px;
+  height: 25px;
+  margin: 0 auto;
+  color: currentColor;
+}
+
+.homeIcon {
+  fill: currentColor;
+  stroke: none;
+}
+
+.bottomNav .active {
+  color: #f44747;
+}
