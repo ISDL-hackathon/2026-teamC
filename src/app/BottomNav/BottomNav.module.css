@@ -1,0 +1,44 @@
+.bottomNavigation {
+  position: fixed;
+  right: 50%;
+  bottom: 0;
+  z-index: 100;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  width: min(100%, 440px);
+  height: 76px;
+  padding: 9px 34px 7px;
+
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid #eeeeee;
+  box-shadow: 0 -4px 16px rgba(28, 28, 28, 0.04);
+  backdrop-filter: blur(12px);
+
+  transform: translateX(50%);
+}
+
+.navigationItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+
+  color: #a1a1a1;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.navigationItem svg {
+  width: 23px;
+  height: 23px;
+}
+
+.navigationItemActive {
+  color: #ef3f48;
+}

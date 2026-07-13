@@ -3,6 +3,7 @@
 import { useState } from "react";
 import "./style.css";
 import Header from "../Header/Header";
+import BottomNav from "../BottomNav/BottomNav";
 
 export default function Home() {
   const [labCount, setLabCount] = useState(12);
@@ -206,56 +207,7 @@ export default function Home() {
         </button>
       </section>
 
-      <nav className="bottomNav">
-        <button className="active">
-          <svg
-            className="bottomNavIcon homeIcon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M3 11.5 12 4l9 7.5v8a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H4.5A1.5 1.5 0 0 1 3 19.5v-8Z" />
-          </svg>
-
-          <p>ホーム</p>
-        </button>
-
-        <button>
-          <svg
-            className="bottomNavIcon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              d="m12 3 2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.27 6.8 19l.99-5.79-4.21-4.1 5.82-.85L12 3Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          <p>チャレンジ</p>
-        </button>
-
-        <button>
-          <svg
-            className="bottomNavIcon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              d="M7 3H4a1 1 0 0 0-1 1v3M17 3h3a1 1 0 0 1 1 1v3M7 21H4a1 1 0 0 1-1-1v-3M17 21h3a1 1 0 0 0 1-1v-3M8 8h8v8H8z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          <p>スキャン</p>
-        </button>
-      </nav>
+      <BottomNav />
     </main>
   );
 }

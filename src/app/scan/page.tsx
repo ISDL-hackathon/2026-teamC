@@ -10,6 +10,7 @@ import {
 } from "@/lib/stamp";
 import "./scan.css";
 import Header from "../Header/Header";
+import BottomNav from "../BottomNav/BottomNav";
 
 type ResultStatus = "waiting" | "success" | "error";
 type CameraStatus = "idle" | "starting" | "active" | "error";
@@ -818,35 +819,7 @@ export default function ScanPage() {
         </section>
       </main>
 
-      <nav
-        className="bottom-navigation"
-        aria-label="メインナビゲーション"
-      >
-        <Link
-          href="/"
-          className="navigation-item"
-        >
-          <HomeIcon />
-          <span>ホーム</span>
-        </Link>
-
-        <Link
-          href="/challenge"
-          className="navigation-item"
-        >
-          <ChallengeIcon />
-          <span>チャレンジ</span>
-        </Link>
-
-        <Link
-          href="/scan"
-          className="navigation-item navigation-item-active"
-          aria-current="page"
-        >
-          <ScanIcon />
-          <span>スキャン</span>
-        </Link>
-      </nav>
+     <BottomNav />
     </div>
   );
 }
