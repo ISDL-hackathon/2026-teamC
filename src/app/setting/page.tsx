@@ -522,7 +522,27 @@ export default function SettingsPage() {
           />
         </div>
       </section>
+      <section className={styles.section}>
+        <p className={styles.label}>ACCOUNT</p>
+        <h2 className={styles.sectionTitle}>アカウント設定</h2>
 
+        <div className={styles.withdrawalCard}>
+          <div className={styles.withdrawalText}>
+            <h3>サービスから退会する</h3>
+            <p>
+              退会すると、プロフィールやこれまでの記録が削除されます。
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className={styles.withdrawalButton}
+          >
+            退会する
+          </button>
+        </div>
+      </section>
+      
       {cropImage && (
         <div className={styles.cropOverlay}>
           <div className={styles.cropModal}>
