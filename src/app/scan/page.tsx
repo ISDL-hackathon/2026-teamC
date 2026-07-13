@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  addStamp,
+  getTodayString,
+  loadStampData,
+  MAX_STAMP_COUNT,
+} from "@/lib/stamp";
 import "./scan.css";
 
 type ResultStatus = "waiting" | "success" | "error";
@@ -23,19 +29,27 @@ type Html5QrcodeInstance = {
     cameraConfig: string | { facingMode: { ideal: string } },
     configuration: {
       fps: number;
-      qrbox: { width: number; height: number };
+      qrbox: {
+        width: number;
+        height: number;
+      };
       aspectRatio?: number;
     },
     qrCodeSuccessCallback: (decodedText: string) => void,
     qrCodeErrorCallback?: () => void,
   ) => Promise<null>;
+
   stop: () => Promise<void>;
   clear: () => void;
   pause: (shouldPauseVideo?: boolean) => void;
+
   getRunningTrackCapabilities?: () => MediaTrackCapabilities & {
     torch?: boolean;
   };
-  applyVideoConstraints?: (constraints: MediaTrackConstraints) => Promise<void>;
+
+  applyVideoConstraints?: (
+    constraints: MediaTrackConstraints,
+  ) => Promise<void>;
 };
 
 type Html5QrcodeConstructor = {
@@ -67,7 +81,8 @@ function isValidQrCode(decodedText: string): boolean {
 }
 
 function getCameraErrorDescription(error: unknown): string {
-  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorMessage =
+    error instanceof Error ? error.message : String(error);
 
   if (
     errorMessage.includes("NotAllowedError") ||
@@ -104,7 +119,11 @@ function getCameraErrorDescription(error: unknown): string {
 
 function MenuIcon() {
   return (
-    <svg className="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className="header-icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         d="M4 7h16M4 12h16M4 17h16"
         fill="none"
@@ -118,11 +137,16 @@ function MenuIcon() {
 
 function BellIcon() {
   return (
-    <svg className="header-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className="header-icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         d="M18 9a6 6 0 0 0-12 0c0 5.5-2.5 6.8-3 8h18c-.5-1.2-3-2.5-3-8Z"
         fill="currentColor"
       />
+
       <path
         d="M9.5 20a2.8 2.8 0 0 0 5 0"
         fill="none"
@@ -155,6 +179,7 @@ function ReloadIcon() {
         strokeLinecap="round"
         strokeWidth="2"
       />
+
       <path
         d="M19.5 3.5v5.2h-5.2"
         fill="none"
@@ -205,6 +230,7 @@ function ScanIcon() {
         strokeLinecap="round"
         strokeWidth="2"
       />
+
       <path
         d="M7 12h10"
         fill="none"
@@ -223,8 +249,12 @@ export default function ScanPage() {
 
   const [showGuide, setShowGuide] = useState(false);
   const [isGuideChecked, setIsGuideChecked] = useState(false);
-  const [cameraStatus, setCameraStatus] = useState<CameraStatus>("idle");
-  const [result, setResult] = useState<ScanResult>(WAITING_RESULT);
+  const [cameraStatus, setCameraStatus] =
+    useState<CameraStatus>("idle");
+
+  const [result, setResult] =
+    useState<ScanResult>(WAITING_RESULT);
+
   const [scannedText, setScannedText] = useState("");
   const [torchSupported, setTorchSupported] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
@@ -253,12 +283,54 @@ export default function ScanPage() {
       }
     }
 
-    const readerElement = document.getElementById(QR_READER_ID);
+    const readerElement =
+      document.getElementById(QR_READER_ID);
+
     readerElement?.replaceChildren();
   }, []);
 
   const startScanner = useCallback(async () => {
-    const currentVersion = scannerVersionRef.current + 1;
+    const currentStampData = loadStampData();
+    const today = getTodayString();
+
+    /*
+     * すでに本日のスタンプを取得している場合は、
+     * カメラを起動しない。
+     */
+    if (currentStampData.lastStampedDate === today) {
+      setCameraStatus("idle");
+      setScannedText("");
+
+      setResult({
+        status: "success",
+        title: "本日はスキャン済みです",
+        description: `今月の来室スタンプは${currentStampData.stampCount}個です。明日またスキャンできます。`,
+      });
+
+      return;
+    }
+
+    /*
+     * 今月のスタンプ数が上限に達している場合も、
+     * カメラを起動しない。
+     */
+    if (currentStampData.stampCount >= MAX_STAMP_COUNT) {
+      setCameraStatus("idle");
+      setScannedText("");
+
+      setResult({
+        status: "success",
+        title: "今月のスタンプ上限に達しています",
+        description:
+          "今月は15スタンプまで獲得できます。来月になると新しいカードになります。",
+      });
+
+      return;
+    }
+
+    const currentVersion =
+      scannerVersionRef.current + 1;
+
     scannerVersionRef.current = currentVersion;
     hasHandledResultRef.current = false;
 
@@ -269,19 +341,25 @@ export default function ScanPage() {
     setTorchSupported(false);
 
     try {
-      const html5QrcodeModule = await import("html5-qrcode");
+      const html5QrcodeModule =
+        await import("html5-qrcode");
 
       const Html5Qrcode =
         html5QrcodeModule.Html5Qrcode as unknown as Html5QrcodeConstructor;
 
-      if (currentVersion !== scannerVersionRef.current) {
+      if (
+        currentVersion !== scannerVersionRef.current
+      ) {
         return;
       }
 
-      const readerElement = document.getElementById(QR_READER_ID);
+      const readerElement =
+        document.getElementById(QR_READER_ID);
 
       if (!readerElement) {
-        throw new Error("QRコード読み取り領域が見つかりません。");
+        throw new Error(
+          "QRコード読み取り領域が見つかりません。",
+        );
       }
 
       readerElement.replaceChildren();
@@ -289,13 +367,22 @@ export default function ScanPage() {
       const cameras = await Html5Qrcode.getCameras();
 
       if (cameras.length === 0) {
-        throw new Error("使用できるカメラが見つかりませんでした。");
+        throw new Error(
+          "使用できるカメラが見つかりませんでした。",
+        );
       }
 
       const selectedCamera =
-        cameras.find((camera) =>
-          camera.label.toLowerCase().includes("back"),
-        ) ?? cameras[0];
+        cameras.find((camera) => {
+          const cameraLabel =
+            camera.label.toLowerCase();
+
+          return (
+            cameraLabel.includes("back") ||
+            cameraLabel.includes("rear") ||
+            cameraLabel.includes("environment")
+          );
+        }) ?? cameras[0];
 
       const scanner = new Html5Qrcode(QR_READER_ID);
       scannerRef.current = scanner;
@@ -312,7 +399,8 @@ export default function ScanPage() {
         },
         (decodedText: string) => {
           if (
-            currentVersion !== scannerVersionRef.current ||
+            currentVersion !==
+              scannerVersionRef.current ||
             hasHandledResultRef.current
           ) {
             return;
@@ -327,30 +415,54 @@ export default function ScanPage() {
             // pauseできない場合は何もしない
           }
 
+          /*
+           * 研究室用の正しいQRコードの場合
+           */
           if (isValidQrCode(decodedText)) {
-            setResult({
-              status: "success",
-              title: "読み取りに成功しました",
-              description:
-                "チェックインが完了しました。ポイントの反映を確認してください。",
-            });
+            const stampResult = addStamp();
+
+            if (stampResult.success) {
+              setResult({
+                status: "success",
+                title: stampResult.message,
+                description: `今月の来室スタンプは${stampResult.stampData.stampCount}個目です。`,
+              });
+            } else {
+              setResult({
+                status: "error",
+                title: stampResult.message,
+                description:
+                  "1日1スタンプ、1か月15スタンプまで獲得できます。",
+              });
+            }
+
+            setCameraStatus("idle");
+            void stopScanner();
 
             return;
           }
 
+          /*
+           * 研究室用ではないQRコードの場合
+           */
           setResult({
             status: "error",
             title: "読み取りに失敗しました",
             description:
               "このQRコードはチェックイン用ではありません。再読み込みして、正しいQRコードを読み取ってください。",
           });
+
+          setCameraStatus("idle");
+          void stopScanner();
         },
         () => {
           // QRコードが映っていないだけの場合は失敗扱いにしない
         },
       );
 
-      if (currentVersion !== scannerVersionRef.current) {
+      if (
+        currentVersion !== scannerVersionRef.current
+      ) {
         await stopScanner();
         return;
       }
@@ -358,15 +470,21 @@ export default function ScanPage() {
       setCameraStatus("active");
 
       try {
-        const capabilities = scanner.getRunningTrackCapabilities?.();
-        setTorchSupported(capabilities?.torch === true);
+        const capabilities =
+          scanner.getRunningTrackCapabilities?.();
+
+        setTorchSupported(
+          capabilities?.torch === true,
+        );
       } catch {
         setTorchSupported(false);
       }
     } catch (error) {
       console.error("Camera start error:", error);
 
-      if (currentVersion !== scannerVersionRef.current) {
+      if (
+        currentVersion !== scannerVersionRef.current
+      ) {
         return;
       }
 
@@ -376,14 +494,17 @@ export default function ScanPage() {
       setResult({
         status: "error",
         title: "カメラを起動できませんでした",
-        description: getCameraErrorDescription(error),
+        description:
+          getCameraErrorDescription(error),
       });
     }
   }, [stopScanner]);
 
   useEffect(() => {
     const hasSeenGuide =
-      window.localStorage.getItem(SCAN_GUIDE_STORAGE_KEY) === "true";
+      window.localStorage.getItem(
+        SCAN_GUIDE_STORAGE_KEY,
+      ) === "true";
 
     setShowGuide(!hasSeenGuide);
     setIsGuideChecked(true);
@@ -399,10 +520,19 @@ export default function ScanPage() {
     return () => {
       void stopScanner();
     };
-  }, [isGuideChecked, showGuide, startScanner, stopScanner]);
+  }, [
+    isGuideChecked,
+    showGuide,
+    startScanner,
+    stopScanner,
+  ]);
 
   const handleStartFromGuide = () => {
-    window.localStorage.setItem(SCAN_GUIDE_STORAGE_KEY, "true");
+    window.localStorage.setItem(
+      SCAN_GUIDE_STORAGE_KEY,
+      "true",
+    );
+
     setShowGuide(false);
   };
 
@@ -424,7 +554,11 @@ export default function ScanPage() {
   const handleTorch = async () => {
     const scanner = scannerRef.current;
 
-    if (!scanner || !torchSupported || !scanner.applyVideoConstraints) {
+    if (
+      !scanner ||
+      !torchSupported ||
+      !scanner.applyVideoConstraints
+    ) {
       return;
     }
 
@@ -443,7 +577,8 @@ export default function ScanPage() {
     } catch {
       setResult({
         status: "error",
-        title: "フラッシュを切り替えられませんでした",
+        title:
+          "フラッシュを切り替えられませんでした",
         description:
           "この端末ではフラッシュを使用できない可能性があります。",
       });
@@ -465,22 +600,28 @@ export default function ScanPage() {
         : "QRコードを枠の中央に合わせてください";
 
   const cameraStatusTitle =
-    cameraStatus === "active"
-      ? "カメラを使用しています"
-      : cameraStatus === "error"
-        ? "カメラを使用できません"
-        : cameraStatus === "idle"
-          ? "カメラを開始していません"
-          : "カメラを起動しています";
+    result.status === "success" &&
+    cameraStatus === "idle"
+      ? "本日の読み取りは完了しています"
+      : cameraStatus === "active"
+        ? "カメラを使用しています"
+        : cameraStatus === "error"
+          ? "カメラを使用できません"
+          : cameraStatus === "idle"
+            ? "カメラを開始していません"
+            : "カメラを起動しています";
 
   const cameraStatusDescription =
-    cameraStatus === "active"
-      ? "QRコードを自動で読み取ります"
-      : cameraStatus === "error"
-        ? "カメラの権限と接続状態を確認してください"
-        : cameraStatus === "idle"
-          ? "初回説明のあとにカメラを起動します"
-          : "カメラの使用許可を確認しています";
+    result.status === "success" &&
+    cameraStatus === "idle"
+      ? "スタンプの獲得状況を確認してください"
+      : cameraStatus === "active"
+        ? "QRコードを自動で読み取ります"
+        : cameraStatus === "error"
+          ? "カメラの権限と接続状態を確認してください"
+          : cameraStatus === "idle"
+            ? "再読み込みボタンから読み取りを開始できます"
+            : "カメラの使用許可を確認しています";
 
   return (
     <div className="scan-page">
@@ -506,7 +647,9 @@ export default function ScanPage() {
 
       <main className="scan-main">
         <section className="scan-title-section">
-          <p className="english-label">QR SCANNER</p>
+          <p className="english-label">
+            QR SCANNER
+          </p>
 
           <h1>QRコードを読み取る</h1>
 
@@ -519,14 +662,22 @@ export default function ScanPage() {
 
         <section className="scanner-card">
           <div className="scanner-preview">
-            <div id={QR_READER_ID} className="qr-reader" />
+            <div
+              id={QR_READER_ID}
+              className="qr-reader"
+            />
 
-            {(cameraStatus !== "active" || showGuide) && (
+            {(showGuide ||
+              cameraStatus === "starting" ||
+              cameraStatus === "error") && (
               <div className="camera-overlay-message">
-                <span
-                  className="camera-overlay-spinner"
-                  aria-hidden="true"
-                />
+                {cameraStatus !== "error" && (
+                  <span
+                    className="camera-overlay-spinner"
+                    aria-hidden="true"
+                  />
+                )}
+
                 <p>
                   {showGuide
                     ? "カメラを使う前に確認してください"
@@ -537,7 +688,8 @@ export default function ScanPage() {
 
             <div
               className={`scan-line ${
-                result.status === "waiting" && cameraStatus === "active"
+                result.status === "waiting" &&
+                cameraStatus === "active"
                   ? "scan-line-active"
                   : ""
               }`}
@@ -548,18 +700,27 @@ export default function ScanPage() {
             <span className="scan-corner bottom-left" />
             <span className="scan-corner bottom-right" />
 
-            <p className="scanner-guide">{scannerGuideText}</p>
+            <p className="scanner-guide">
+              {scannerGuideText}
+            </p>
 
             <div className="scanner-button-area">
               <button
                 type="button"
                 className={`scanner-circle-button flash-button ${
-                  torchEnabled ? "scanner-circle-button-active" : ""
+                  torchEnabled
+                    ? "scanner-circle-button-active"
+                    : ""
                 }`}
                 aria-label={
-                  torchEnabled ? "フラッシュを消す" : "フラッシュをつける"
+                  torchEnabled
+                    ? "フラッシュを消す"
+                    : "フラッシュをつける"
                 }
-                disabled={!torchSupported || cameraStatus !== "active"}
+                disabled={
+                  !torchSupported ||
+                  cameraStatus !== "active"
+                }
                 onClick={() => {
                   void handleTorch();
                 }}
@@ -581,11 +742,15 @@ export default function ScanPage() {
             </div>
           </div>
 
-          <div className={`camera-status camera-status-${cameraStatus}`}>
+          <div
+            className={`camera-status camera-status-${cameraStatus}`}
+          >
             <span className="camera-status-mark" />
 
             <div>
-              <p className="camera-status-title">{cameraStatusTitle}</p>
+              <p className="camera-status-title">
+                {cameraStatusTitle}
+              </p>
 
               <p className="camera-status-description">
                 {cameraStatusDescription}
@@ -596,9 +761,13 @@ export default function ScanPage() {
 
         {showGuide && (
           <section className="camera-guide-card">
-            <p className="english-label guide-label">FIRST TIME GUIDE</p>
+            <p className="english-label guide-label">
+              FIRST TIME GUIDE
+            </p>
 
-            <h2>カメラの使用を許可してください</h2>
+            <h2>
+              カメラの使用を許可してください
+            </h2>
 
             <p className="guide-description">
               QRコードを読み取るためにカメラを使用します。
@@ -606,14 +775,21 @@ export default function ScanPage() {
             </p>
 
             <div className="guide-check-list">
-              <p>1. 表示された確認画面で「許可」を押してください。</p>
+              <p>
+                1.
+                表示された確認画面で「許可」を押してください。
+              </p>
+
               <p>
                 2. 起動しない場合は、Windowsの
-                「設定 → プライバシーとセキュリティ → カメラ」を確認してください。
+                「設定 → プライバシーとセキュリティ
+                → カメラ」を確認してください。
               </p>
+
               <p>
                 3. 「カメラへのアクセス」と
-                「デスクトップ アプリにカメラへのアクセスを許可する」をオンにしてください。
+                「デスクトップ
+                アプリにカメラへのアクセスを許可する」をオンにしてください。
               </p>
             </div>
 
@@ -639,11 +815,15 @@ export default function ScanPage() {
           </div>
 
           <div className="result-content">
-            <p className="english-label result-label">SCAN RESULT</p>
+            <p className="english-label result-label">
+              SCAN RESULT
+            </p>
 
             <h2>{result.title}</h2>
 
-            <p className="result-description">{result.description}</p>
+            <p className="result-description">
+              {result.description}
+            </p>
 
             {scannedText && (
               <p className="scanned-text">
@@ -655,13 +835,22 @@ export default function ScanPage() {
         </section>
       </main>
 
-      <nav className="bottom-navigation" aria-label="メインナビゲーション">
-        <Link href="/" className="navigation-item">
+      <nav
+        className="bottom-navigation"
+        aria-label="メインナビゲーション"
+      >
+        <Link
+          href="/"
+          className="navigation-item"
+        >
           <HomeIcon />
           <span>ホーム</span>
         </Link>
 
-        <Link href="/challenge" className="navigation-item">
+        <Link
+          href="/challenge"
+          className="navigation-item"
+        >
           <ChallengeIcon />
           <span>チャレンジ</span>
         </Link>
