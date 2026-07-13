@@ -1,0 +1,165 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.backButton {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: #ffffff;
+  color: #444444;
+  font-size: 20px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.06);
+  place-items: center;
+}
+
+.label {
+  margin: 0 0 3px;
+  color: #ef3f43;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.formCard {
+  padding: 20px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.formGroup {
+  margin-bottom: 18px;
+}
+
+.formGroup label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: #444444;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.formGroup label span {
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: #fff0f0;
+  color: #ef3f43;
+  font-size: 8px;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #e5e5e5;
+  border-radius: 13px;
+  outline: none;
+  background: #fafafa;
+  color: #333333;
+  font-family: inherit;
+  font-size: 12px;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.formGroup textarea {
+  line-height: 1.7;
+  resize: vertical;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  border-color: #ef3f43;
+  background: #ffffff;
+}
+
+.capacityInput {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.capacityInput input {
+  width: 110px;
+}
+
+.capacityInput strong {
+  color: #777777;
+  font-size: 12px;
+}
+
+.errorMessage {
+  margin: 0 0 17px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #d2393f;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.buttonArea {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cancelButton,
+.submitButton {
+  display: grid;
+  min-height: 46px;
+  padding: 10px;
+  border-radius: 13px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  place-items: center;
+}
+
+.cancelButton {
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  color: #777777;
+}
+
+.submitButton {
+  border: none;
+  background: #ef3f43;
+  color: #ffffff;
+}
+
+.submitButton:hover {
+  background: #dd3438;
+}
+
+@media (max-width: 350px) {
+  .formCard {
+    padding: 17px;
+  }
+
+  .buttonArea {
+    grid-template-columns: 1fr;
+  }
+}
