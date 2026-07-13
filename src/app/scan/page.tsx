@@ -9,6 +9,7 @@ import {
   MAX_STAMP_COUNT,
 } from "@/lib/stamp";
 import "./scan.css";
+import Header from "../Header/Header";
 
 type ResultStatus = "waiting" | "success" | "error";
 type CameraStatus = "idle" | "starting" | "active" | "error";
@@ -625,25 +626,7 @@ export default function ScanPage() {
 
   return (
     <div className="scan-page">
-      <header className="scan-header">
-        <button
-          type="button"
-          className="header-button"
-          aria-label="メニューを開く"
-        >
-          <MenuIcon />
-        </button>
-
-        <p className="scan-logo">ISDL</p>
-
-        <button
-          type="button"
-          className="header-button notification-button"
-          aria-label="通知を確認する"
-        >
-          <BellIcon />
-        </button>
-      </header>
+      <Header/>
 
       <main className="scan-main">
         <section className="scan-title-section">

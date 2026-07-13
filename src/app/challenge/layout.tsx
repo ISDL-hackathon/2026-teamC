@@ -1,9 +1,11 @@
 "use client";
 
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import styles from "./page.module.css";
+import Header from "../Header/Header";
 
 type ChallengeLayoutProps = {
   children: ReactNode;
@@ -17,25 +19,7 @@ export default function ChallengeLayout({
   return (
     <main className={styles.wrapper}>
       <div className={styles.page}>
-        <header className={styles.header}>
-          <button
-            type="button"
-            className={styles.headerButton}
-            aria-label="メニューを開く"
-          >
-            ☰
-          </button>
-
-          <h1 className={styles.logo}>ISDL</h1>
-
-          <button
-            type="button"
-            className={styles.headerButton}
-            aria-label="通知を確認する"
-          >
-            🔔
-          </button>
-        </header>
+       <Header/>
 
         <div className={styles.content}>
           <nav className={styles.tabs} aria-label="チャレンジ画面">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import "./style.css";
+import Header from "../Header/Header";
 
 export default function Home() {
   const [labCount, setLabCount] = useState(12);
@@ -29,13 +30,7 @@ export default function Home() {
 
   return (
     <main className="app">
-      <header className="header">
-        <button className="iconButton">☰</button>
-
-        <h1 className="logo">ISDL</h1>
-
-        <button className="iconButton">🔔</button>
-      </header>
+      <Header/>
 
       <section className="hero">
         <div>
