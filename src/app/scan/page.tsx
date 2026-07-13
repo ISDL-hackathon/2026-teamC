@@ -9,6 +9,8 @@ import {
   MAX_STAMP_COUNT,
 } from "@/lib/stamp";
 import "./scan.css";
+import Header from "../Header/Header";
+import BottomNav from "../BottomNav/BottomNav";
 
 type ResultStatus = "waiting" | "success" | "error";
 type CameraStatus = "idle" | "starting" | "active" | "error";
@@ -625,25 +627,7 @@ export default function ScanPage() {
 
   return (
     <div className="scan-page">
-      <header className="scan-header">
-        <button
-          type="button"
-          className="header-button"
-          aria-label="メニューを開く"
-        >
-          <MenuIcon />
-        </button>
-
-        <p className="scan-logo">ISDL</p>
-
-        <button
-          type="button"
-          className="header-button notification-button"
-          aria-label="通知を確認する"
-        >
-          <BellIcon />
-        </button>
-      </header>
+      <Header/>
 
       <main className="scan-main">
         <section className="scan-title-section">
@@ -835,35 +819,7 @@ export default function ScanPage() {
         </section>
       </main>
 
-      <nav
-        className="bottom-navigation"
-        aria-label="メインナビゲーション"
-      >
-        <Link
-          href="/"
-          className="navigation-item"
-        >
-          <HomeIcon />
-          <span>ホーム</span>
-        </Link>
-
-        <Link
-          href="/challenge"
-          className="navigation-item"
-        >
-          <ChallengeIcon />
-          <span>チャレンジ</span>
-        </Link>
-
-        <Link
-          href="/scan"
-          className="navigation-item navigation-item-active"
-          aria-current="page"
-        >
-          <ScanIcon />
-          <span>スキャン</span>
-        </Link>
-      </nav>
+     <BottomNav />
     </div>
   );
 }
