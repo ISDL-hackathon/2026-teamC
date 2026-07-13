@@ -151,6 +151,7 @@ button {
 
 .scanner-light {
   position: absolute;
+  z-index: 3;
   top: 73px;
   left: 50%;
   width: 245px;
@@ -162,62 +163,88 @@ button {
     0 0 7px rgba(242, 70, 77, 0.9),
     0 0 18px rgba(242, 70, 77, 0.75),
     0 0 34px rgba(242, 70, 77, 0.45);
+  animation: scanLineMove 2.2s ease-in-out infinite;
 }
 
 .scanner-corner {
   position: absolute;
+  z-index: 2;
   width: 52px;
   height: 52px;
   border-color: #ffffff;
   border-style: solid;
 }
 
+/* カメラ映像の少し外側に白い四つ角を配置 */
 .corner-top-left {
-  top: 51px;
-  left: 74px;
+  top: 92px;
+  left: calc(50% - 127px);
   border-width: 5px 0 0 5px;
   border-radius: 13px 0 0;
 }
 
 .corner-top-right {
-  top: 51px;
-  right: 74px;
+  top: 92px;
+  right: calc(50% - 127px);
   border-width: 5px 5px 0 0;
   border-radius: 0 13px 0 0;
 }
 
 .corner-bottom-left {
-  bottom: 107px;
-  left: 74px;
+  bottom: 90px;
+  left: calc(50% - 127px);
   border-width: 0 0 5px 5px;
   border-radius: 0 0 0 13px;
 }
 
 .corner-bottom-right {
-  right: 74px;
-  bottom: 107px;
+  right: calc(50% - 127px);
+  bottom: 90px;
   border-width: 0 5px 5px 0;
   border-radius: 0 0 13px;
 }
 
-.qr-code-wrapper {
+#qr-reader {
   position: absolute;
   top: 104px;
   left: 50%;
-  width: 172px;
-  height: 172px;
+  width: 230px;
+  height: 230px;
+  overflow: hidden;
   transform: translateX(-50%);
+  background: #111111;
+  border: 0 !important;
+  border-radius: 20px;
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.18));
 }
 
-.qr-code-illustration {
-  display: block;
-  width: 100%;
-  height: 100%;
+#qr-reader > div {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+}
+
+#qr-reader__scan_region {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+#qr-reader__dashboard,
+#qr-reader__header_message {
+  display: none !important;
 }
 
 .scanner-message {
   position: absolute;
+  z-index: 4;
   bottom: 50px;
   left: 50%;
   width: max-content;
@@ -236,6 +263,7 @@ button {
 
 .scanner-buttons {
   position: absolute;
+  z-index: 5;
   right: 20px;
   bottom: 19px;
   left: 20px;
@@ -332,16 +360,25 @@ button {
   width: 57px;
   height: 57px;
   place-items: center;
-  color: #20966a;
-  background: #e3f4ed;
+  background: #fff1e6;
   border-radius: 18px;
+}
+
+.result-icon-idle {
+  background: #fff1e6;
+}
+
+.result-icon-success {
+  background: #e3f4ed;
+}
+
+.result-icon-error {
+  background: #ffe8ea;
 }
 
 .result-icon span {
   display: block;
-  transform: rotate(-6deg);
-  font-size: 34px;
-  font-weight: 700;
+  font-size: 31px;
   line-height: 1;
 }
 
@@ -404,6 +441,20 @@ button {
   color: #ef3f48;
 }
 
+@keyframes scanLineMove {
+  0% {
+    top: 73px;
+  }
+
+  50% {
+    top: 305px;
+  }
+
+  100% {
+    top: 73px;
+  }
+}
+
 @media (max-width: 380px) {
   .scanner-preview {
     height: 410px;
@@ -414,20 +465,30 @@ button {
     width: 220px;
   }
 
-  .corner-top-left,
+  .corner-top-left {
+    top: 90px;
+    left: calc(50% - 117px);
+  }
+
+  .corner-top-right {
+    top: 90px;
+    right: calc(50% - 117px);
+  }
+
   .corner-bottom-left {
-    left: 61px;
+    bottom: 86px;
+    left: calc(50% - 117px);
   }
 
-  .corner-top-right,
   .corner-bottom-right {
-    right: 61px;
+    right: calc(50% - 117px);
+    bottom: 86px;
   }
 
-  .qr-code-wrapper {
+  #qr-reader {
     top: 102px;
-    width: 158px;
-    height: 158px;
+    width: 210px;
+    height: 210px;
   }
 
   .scanner-message {
@@ -435,5 +496,19 @@ button {
     padding-right: 13px;
     padding-left: 13px;
     font-size: 10px;
+  }
+
+  @keyframes scanLineMove {
+    0% {
+      top: 67px;
+    }
+
+    50% {
+      top: 282px;
+    }
+
+    100% {
+      top: 67px;
+    }
   }
 }

@@ -1,13 +1,48 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
+import {
+  addStamp,
+  getTodayString,
+  loadStampData,
+  MAX_STAMP_COUNT,
+} from "@/lib/stamp";
 import "./scan.css";
+
+const VALID_QR_TEXT = "ISDL_CHECKIN";
+
+type ScanResultStatus = "idle" | "success" | "error";
+
+async function stopQrReader(qrReader: Html5Qrcode | null) {
+  if (!qrReader) {
+    return;
+  }
+
+  try {
+    const state = qrReader.getState();
+
+    if (
+      state === Html5QrcodeScannerState.SCANNING ||
+      state === Html5QrcodeScannerState.PAUSED
+    ) {
+      await qrReader.stop();
+    }
+  } catch {
+    // すでに停止している場合は何もしない
+  }
+
+  try {
+    qrReader.clear();
+  } catch {
+    // clearできない状態の場合も何もしない
+  }
+}
 
 function MenuIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="header-svg-icon"
-    >
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="header-svg-icon">
       <path
         d="M4 7h16M4 12h16M4 17h16"
         fill="none"
@@ -21,11 +56,7 @@ function MenuIcon() {
 
 function BellIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="header-svg-icon"
-    >
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="header-svg-icon">
       <path
         d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 8.5h18C21 16 18 16 18 9Z"
         fill="currentColor"
@@ -120,40 +151,154 @@ function ScanIcon() {
   );
 }
 
-function QrCodeIllustration() {
-  return (
-    <svg
-      viewBox="0 0 180 180"
-      aria-hidden="true"
-      className="qr-code-illustration"
-    >
-      <rect x="8" y="8" width="164" height="164" rx="14" fill="#f4f4f4" />
-
-      <rect x="25" y="25" width="42" height="42" fill="#242424" />
-      <rect x="34" y="34" width="24" height="24" fill="#f4f4f4" />
-      <rect x="41" y="41" width="10" height="10" fill="#242424" />
-
-      <rect x="113" y="25" width="42" height="42" fill="#242424" />
-      <rect x="122" y="34" width="24" height="24" fill="#f4f4f4" />
-      <rect x="129" y="41" width="10" height="10" fill="#242424" />
-
-      <rect x="25" y="113" width="42" height="42" fill="#242424" />
-      <rect x="34" y="122" width="24" height="24" fill="#f4f4f4" />
-      <rect x="41" y="129" width="10" height="10" fill="#242424" />
-
-      <rect x="91" y="106" width="12" height="12" fill="#242424" />
-      <rect x="108" y="123" width="12" height="12" fill="#242424" />
-      <rect x="125" y="106" width="12" height="12" fill="#242424" />
-      <rect x="142" y="106" width="12" height="12" fill="#242424" />
-      <rect x="91" y="140" width="12" height="12" fill="#242424" />
-      <rect x="108" y="140" width="12" height="12" fill="#242424" />
-      <rect x="125" y="123" width="12" height="12" fill="#242424" />
-      <rect x="142" y="140" width="12" height="12" fill="#242424" />
-    </svg>
-  );
-}
-
 export default function ScanPage() {
+  const [scannerMessage, setScannerMessage] = useState(
+    "QRコードを枠の中央に合わせてください"
+  );
+  const [resultTitle, setResultTitle] = useState(
+    "読み取り結果がここに表示されます"
+  );
+  const [resultDescription, setResultDescription] = useState(
+    "読み取りに成功すると、チェックインやポイント獲得の内容を確認できます。"
+  );
+  const [resultIcon, setResultIcon] = useState("📷");
+  const [resultStatus, setResultStatus] = useState<ScanResultStatus>("idle");
+  const [isCameraActive, setIsCameraActive] = useState(true);
+
+  const qrReaderRef = useRef<Html5Qrcode | null>(null);
+  const isScannedRef = useRef(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const currentStampData = loadStampData();
+    const today = getTodayString();
+
+    if (currentStampData.lastStampedDate === today) {
+      setScannerMessage("本日はスキャン済みです");
+      setResultTitle("本日はスキャン済みです");
+      setResultDescription(
+        `今月の来室スタンプは${currentStampData.stampCount}個です。明日またスキャンできます。`
+      );
+      setResultIcon("😊");
+      setResultStatus("success");
+      setIsCameraActive(false);
+      return;
+    }
+
+    if (currentStampData.stampCount >= MAX_STAMP_COUNT) {
+      setScannerMessage("今月の上限に達しています");
+      setResultTitle("今月のスタンプ上限に達しています");
+      setResultDescription(
+        "今月は15スタンプまで獲得できます。来月になると新しいカードになります。"
+      );
+      setResultIcon("😊");
+      setResultStatus("success");
+      setIsCameraActive(false);
+      return;
+    }
+
+    const qrReader = new Html5Qrcode("qr-reader");
+    qrReaderRef.current = qrReader;
+
+    qrReader
+      .start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: {
+            width: 230,
+            height: 230,
+          },
+        },
+        async (decodedText) => {
+          if (isScannedRef.current) {
+            return;
+          }
+
+          isScannedRef.current = true;
+
+          if (decodedText !== VALID_QR_TEXT) {
+            if (!isMounted) {
+              return;
+            }
+
+            setScannerMessage("無効なQRコードです");
+            setResultTitle("研究室のQRコードではありません");
+            setResultDescription(
+              "研究室に設置された正しいQRコードを読み取ってください。"
+            );
+            setResultIcon("😭");
+            setResultStatus("error");
+            setIsCameraActive(false);
+
+            await stopQrReader(qrReader);
+            qrReaderRef.current = null;
+
+            return;
+          }
+
+          const stampResult = addStamp();
+
+          if (!isMounted) {
+            return;
+          }
+
+          setScannerMessage(stampResult.message);
+          setResultTitle(stampResult.message);
+
+          if (stampResult.success) {
+            setResultDescription(
+              `今月の来室スタンプは${stampResult.stampData.stampCount}個目です。`
+            );
+            setResultIcon("😊");
+            setResultStatus("success");
+          } else {
+            setResultDescription(
+              "1日1スタンプ、1か月15スタンプまで獲得できます。"
+            );
+            setResultIcon("😭");
+            setResultStatus("error");
+          }
+
+          setIsCameraActive(false);
+
+          await stopQrReader(qrReader);
+          qrReaderRef.current = null;
+        },
+        () => {
+          // QRを読み取れていない間は何もしない
+        }
+      )
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setScannerMessage("カメラを起動できませんでした");
+        setResultTitle("カメラの使用を許可してください");
+        setResultDescription(
+          "ブラウザまたは端末の設定から、カメラの使用を許可してください。"
+        );
+        setResultIcon("😭");
+        setResultStatus("error");
+        setIsCameraActive(false);
+      });
+
+    return () => {
+      isMounted = false;
+
+      const currentQrReader = qrReaderRef.current;
+      qrReaderRef.current = null;
+
+      void stopQrReader(currentQrReader);
+    };
+  }, []);
+
+  const handleReload = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="scan-page">
       <header className="scan-header">
@@ -191,20 +336,16 @@ export default function ScanPage() {
 
         <section className="scanner-container">
           <div className="scanner-preview">
-            <div className="scanner-light" />
+            {isCameraActive && <div className="scanner-light" />}
 
             <span className="scanner-corner corner-top-left" />
             <span className="scanner-corner corner-top-right" />
             <span className="scanner-corner corner-bottom-left" />
             <span className="scanner-corner corner-bottom-right" />
 
-            <div className="qr-code-wrapper">
-              <QrCodeIllustration />
-            </div>
+            <div id="qr-reader" />
 
-            <p className="scanner-message">
-              QRコードを枠の中央に合わせてください
-            </p>
+            <p className="scanner-message">{scannerMessage}</p>
 
             <div className="scanner-buttons">
               <button
@@ -219,6 +360,7 @@ export default function ScanPage() {
                 type="button"
                 className="scanner-action-button"
                 aria-label="読み取りをやり直す"
+                onClick={handleReload}
               >
                 <ReloadIcon />
               </button>
@@ -230,30 +372,34 @@ export default function ScanPage() {
 
             <div>
               <p className="camera-status-title">
-                カメラを使用しています
+                {isCameraActive
+                  ? "カメラを使用しています"
+                  : "読み取りを終了しました"}
               </p>
 
               <p className="camera-status-description">
-                QRコードを自動で読み取ります
+                {isCameraActive
+                  ? "QRコードを自動で読み取ります"
+                  : "もう一度読み取る場合は再読み込みしてください"}
               </p>
             </div>
           </div>
         </section>
 
         <section className="scan-result-card">
-          <div className="result-icon" aria-hidden="true">
-            <span>✓</span>
+          <div
+            className={`result-icon result-icon-${resultStatus}`}
+            aria-hidden="true"
+          >
+            <span>{resultIcon}</span>
           </div>
 
           <div className="result-content">
             <p className="result-label">SCAN RESULT</p>
 
-            <h2>読み取り結果がここに表示されます</h2>
+            <h2>{resultTitle}</h2>
 
-            <p className="result-description">
-              読み取りに成功すると、チェックインや
-              ポイント獲得の内容を確認できます。
-            </p>
+            <p className="result-description">{resultDescription}</p>
           </div>
         </section>
       </main>
@@ -264,15 +410,12 @@ export default function ScanPage() {
           <span>ホーム</span>
         </Link>
 
-        <Link
-          href="/challenge"
-          className="navigation-item navigation-item-active"
-        >
+        <Link href="/challenge/point" className="navigation-item">
           <ChallengeIcon />
           <span>チャレンジ</span>
         </Link>
 
-        <Link href="/scan" className="navigation-item">
+        <Link href="/scan" className="navigation-item navigation-item-active">
           <ScanIcon />
           <span>スキャン</span>
         </Link>
