@@ -1,10 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter } from "next/navigation";
+import { deleteAccount } from "./actions";
 import styles from "./settings.module.css";
 
-const DEFAULT_ICONS = ["👩‍💻", "👨‍💻", "👱‍♀️", "👨‍🦱", "🐱", "🐶", "🐥", "🤖"];
+const DEFAULT_ICONS = [
+  "👩‍💻",
+  "👨‍💻",
+  "👱‍♀️",
+  "👨‍🦱",
+  "🐱",
+  "🐶",
+  "🐥",
+  "🤖",
+];
 
 type NotificationState = {
   notice: boolean;
@@ -17,7 +32,11 @@ type CropBox = {
   size: number;
 };
 
-type CropCorner = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
+type CropCorner =
+  | "topLeft"
+  | "topRight"
+  | "bottomLeft"
+  | "bottomRight";
 
 type DragState =
   | {
@@ -41,33 +60,76 @@ type DragState =
 export default function SettingsPage() {
   const router = useRouter();
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const previewRef = useRef<HTMLDivElement | null>(null);
-  const cropImageRef = useRef<HTMLImageElement | null>(null);
-  const cropCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fileInputRef =
+    useRef<HTMLInputElement | null>(null);
 
-  const [nickname, setNickname] = useState("");
-  const [avatar, setAvatar] = useState(DEFAULT_ICONS[0]);
-  const [notifications, setNotifications] = useState<NotificationState>({
+  const previewRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const cropImageRef =
+    useRef<HTMLImageElement | null>(null);
+
+  const cropCanvasRef =
+    useRef<HTMLCanvasElement | null>(null);
+
+  const [nickname, setNickname] =
+    useState("");
+
+  const [avatar, setAvatar] = useState(
+    DEFAULT_ICONS[0],
+  );
+
+  const [
+    notifications,
+    setNotifications,
+  ] = useState<NotificationState>({
     notice: true,
     challenge: true,
   });
 
-  const [isSaved, setIsSaved] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isSaved, setIsSaved] =
+    useState(false);
 
-  const [cropImage, setCropImage] = useState<string | null>(null);
-  const [cropBox, setCropBox] = useState<CropBox>({
-    x: 60,
-    y: 60,
-    size: 180,
-  });
-  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [isLoaded, setIsLoaded] =
+    useState(false);
+
+  const [cropImage, setCropImage] =
+    useState<string | null>(null);
+
+  const [cropBox, setCropBox] =
+    useState<CropBox>({
+      x: 60,
+      y: 60,
+      size: 180,
+    });
+
+  const [dragState, setDragState] =
+    useState<DragState | null>(null);
+
+  const [
+    isWithdrawalModalOpen,
+    setIsWithdrawalModalOpen,
+  ] = useState(false);
+
+  const [
+    withdrawalError,
+    setWithdrawalError,
+  ] = useState("");
+
+  const [
+    isWithdrawalPending,
+    startWithdrawalTransition,
+  ] = useTransition();
 
   useEffect(() => {
-    const savedName = localStorage.getItem("nickname");
-    const savedAvatar = localStorage.getItem("avatar");
-    const savedNotifications = localStorage.getItem("notifications");
+    const savedName =
+      localStorage.getItem("nickname");
+
+    const savedAvatar =
+      localStorage.getItem("avatar");
+
+    const savedNotifications =
+      localStorage.getItem("notifications");
 
     if (savedName) {
       setNickname(savedName);
@@ -79,7 +141,9 @@ export default function SettingsPage() {
 
     if (savedNotifications) {
       try {
-        setNotifications(JSON.parse(savedNotifications));
+        setNotifications(
+          JSON.parse(savedNotifications),
+        );
       } catch {
         setNotifications({
           notice: true,
@@ -92,27 +156,46 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    const handlePointerMove = (event: PointerEvent) => {
-      if (!dragState || !previewRef.current) return;
+    const handlePointerMove = (
+      event: PointerEvent,
+    ) => {
+      if (
+        !dragState ||
+        !previewRef.current
+      ) {
+        return;
+      }
 
-      const previewRect = previewRef.current.getBoundingClientRect();
-      const previewWidth = previewRect.width;
-      const previewHeight = previewRect.height;
+      const previewRect =
+        previewRef.current.getBoundingClientRect();
 
-      const dx = event.clientX - dragState.startPointerX;
-      const dy = event.clientY - dragState.startPointerY;
+      const previewWidth =
+        previewRect.width;
+
+      const previewHeight =
+        previewRect.height;
+
+      const dx =
+        event.clientX -
+        dragState.startPointerX;
+
+      const dy =
+        event.clientY -
+        dragState.startPointerY;
 
       if (dragState.type === "move") {
         const nextX = clamp(
           dragState.startX + dx,
           0,
-          previewWidth - dragState.startSize
+          previewWidth -
+            dragState.startSize,
         );
 
         const nextY = clamp(
           dragState.startY + dy,
           0,
-          previewHeight - dragState.startSize
+          previewHeight -
+            dragState.startSize,
         );
 
         setCropBox({
@@ -125,38 +208,103 @@ export default function SettingsPage() {
       }
 
       const minSize = 70;
-      const maxSize = Math.min(previewWidth, previewHeight);
+
+      const maxSize = Math.min(
+        previewWidth,
+        previewHeight,
+      );
 
       let nextX = dragState.startX;
       let nextY = dragState.startY;
-      let nextSize = dragState.startSize;
+      let nextSize =
+        dragState.startSize;
 
-      if (dragState.corner === "bottomRight") {
+      if (
+        dragState.corner ===
+        "bottomRight"
+      ) {
         const amount = Math.max(dx, dy);
-        nextSize = clamp(dragState.startSize + amount, minSize, maxSize);
+
+        nextSize = clamp(
+          dragState.startSize + amount,
+          minSize,
+          maxSize,
+        );
+
         nextX = dragState.startX;
         nextY = dragState.startY;
       }
 
-      if (dragState.corner === "bottomLeft") {
-        const amount = Math.max(-dx, dy);
-        nextSize = clamp(dragState.startSize + amount, minSize, maxSize);
-        nextX = dragState.startX + dragState.startSize - nextSize;
+      if (
+        dragState.corner ===
+        "bottomLeft"
+      ) {
+        const amount = Math.max(
+          -dx,
+          dy,
+        );
+
+        nextSize = clamp(
+          dragState.startSize + amount,
+          minSize,
+          maxSize,
+        );
+
+        nextX =
+          dragState.startX +
+          dragState.startSize -
+          nextSize;
+
         nextY = dragState.startY;
       }
 
-      if (dragState.corner === "topRight") {
-        const amount = Math.max(dx, -dy);
-        nextSize = clamp(dragState.startSize + amount, minSize, maxSize);
+      if (
+        dragState.corner ===
+        "topRight"
+      ) {
+        const amount = Math.max(
+          dx,
+          -dy,
+        );
+
+        nextSize = clamp(
+          dragState.startSize + amount,
+          minSize,
+          maxSize,
+        );
+
         nextX = dragState.startX;
-        nextY = dragState.startY + dragState.startSize - nextSize;
+
+        nextY =
+          dragState.startY +
+          dragState.startSize -
+          nextSize;
       }
 
-      if (dragState.corner === "topLeft") {
-        const amount = Math.max(-dx, -dy);
-        nextSize = clamp(dragState.startSize + amount, minSize, maxSize);
-        nextX = dragState.startX + dragState.startSize - nextSize;
-        nextY = dragState.startY + dragState.startSize - nextSize;
+      if (
+        dragState.corner ===
+        "topLeft"
+      ) {
+        const amount = Math.max(
+          -dx,
+          -dy,
+        );
+
+        nextSize = clamp(
+          dragState.startSize + amount,
+          minSize,
+          maxSize,
+        );
+
+        nextX =
+          dragState.startX +
+          dragState.startSize -
+          nextSize;
+
+        nextY =
+          dragState.startY +
+          dragState.startSize -
+          nextSize;
       }
 
       if (nextX < 0) {
@@ -169,15 +317,26 @@ export default function SettingsPage() {
         nextY = 0;
       }
 
-      if (nextX + nextSize > previewWidth) {
-        nextSize = previewWidth - nextX;
+      if (
+        nextX + nextSize >
+        previewWidth
+      ) {
+        nextSize =
+          previewWidth - nextX;
       }
 
-      if (nextY + nextSize > previewHeight) {
-        nextSize = previewHeight - nextY;
+      if (
+        nextY + nextSize >
+        previewHeight
+      ) {
+        nextSize =
+          previewHeight - nextY;
       }
 
-      nextSize = Math.max(minSize, nextSize);
+      nextSize = Math.max(
+        minSize,
+        nextSize,
+      );
 
       setCropBox({
         x: nextX,
@@ -190,36 +349,69 @@ export default function SettingsPage() {
       setDragState(null);
     };
 
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener(
+      "pointermove",
+      handlePointerMove,
+    );
+
+    window.addEventListener(
+      "pointerup",
+      handlePointerUp,
+    );
 
     return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener(
+        "pointermove",
+        handlePointerMove,
+      );
+
+      window.removeEventListener(
+        "pointerup",
+        handlePointerUp,
+      );
     };
   }, [dragState]);
 
-  const handleNicknameChange = (value: string) => {
-    if (value.length > 12) return;
+  const handleNicknameChange = (
+    value: string,
+  ) => {
+    if (value.length > 12) {
+      return;
+    }
 
     setNickname(value);
     setIsSaved(false);
   };
 
-  const handleSelectIcon = (icon: string) => {
+  const handleSelectIcon = (
+    icon: string,
+  ) => {
     setAvatar(icon);
     setIsSaved(false);
   };
 
-  const handleUploadImage = (file: File | undefined) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return;
+  const handleUploadImage = (
+    file: File | undefined,
+  ) => {
+    if (!file) {
+      return;
+    }
+
+    if (
+      !file.type.startsWith("image/")
+    ) {
+      return;
+    }
 
     const reader = new FileReader();
 
     reader.onload = () => {
-      if (typeof reader.result === "string") {
+      if (
+        typeof reader.result ===
+        "string"
+      ) {
         setCropImage(reader.result);
+
         setCropBox({
           x: 60,
           y: 60,
@@ -231,7 +423,9 @@ export default function SettingsPage() {
     reader.readAsDataURL(file);
   };
 
-  const toggleNotification = (key: keyof NotificationState) => {
+  const toggleNotification = (
+    key: keyof NotificationState,
+  ) => {
     setNotifications((prev) => {
       const next = {
         ...prev,
@@ -239,14 +433,26 @@ export default function SettingsPage() {
       };
 
       setIsSaved(false);
+
       return next;
     });
   };
 
   const handleSave = () => {
-    localStorage.setItem("nickname", nickname);
-    localStorage.setItem("avatar", avatar);
-    localStorage.setItem("notifications", JSON.stringify(notifications));
+    localStorage.setItem(
+      "nickname",
+      nickname,
+    );
+
+    localStorage.setItem(
+      "avatar",
+      avatar,
+    );
+
+    localStorage.setItem(
+      "notifications",
+      JSON.stringify(notifications),
+    );
 
     setIsSaved(true);
 
@@ -256,19 +462,35 @@ export default function SettingsPage() {
   };
 
   const handleCropImageLoad = () => {
-    if (!previewRef.current) return;
+    if (!previewRef.current) {
+      return;
+    }
 
-    const previewRect = previewRef.current.getBoundingClientRect();
-    const initialSize = Math.min(previewRect.width, previewRect.height) * 0.62;
+    const previewRect =
+      previewRef.current.getBoundingClientRect();
+
+    const initialSize =
+      Math.min(
+        previewRect.width,
+        previewRect.height,
+      ) * 0.62;
 
     setCropBox({
-      x: (previewRect.width - initialSize) / 2,
-      y: (previewRect.height - initialSize) / 2,
+      x:
+        (previewRect.width -
+          initialSize) /
+        2,
+      y:
+        (previewRect.height -
+          initialSize) /
+        2,
       size: initialSize,
     });
   };
 
-  const handleStartMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handleStartMove = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
     event.preventDefault();
 
     setDragState({
@@ -283,7 +505,7 @@ export default function SettingsPage() {
 
   const handleStartResize = (
     event: React.PointerEvent<HTMLButtonElement>,
-    corner: CropCorner
+    corner: CropCorner,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -300,48 +522,78 @@ export default function SettingsPage() {
   };
 
   const handleApplyCrop = () => {
-    if (!cropImage || !previewRef.current || !cropImageRef.current) {
+    if (
+      !cropImage ||
+      !previewRef.current ||
+      !cropImageRef.current
+    ) {
       return;
     }
 
-    const previewRect = previewRef.current.getBoundingClientRect();
-    const imageRect = cropImageRef.current.getBoundingClientRect();
+    const previewRect =
+      previewRef.current.getBoundingClientRect();
+
+    const imageRect =
+      cropImageRef.current.getBoundingClientRect();
 
     const image = new Image();
 
     image.onload = () => {
-      const canvas = cropCanvasRef.current;
+      const canvas =
+        cropCanvasRef.current;
 
-      if (!canvas) return;
+      if (!canvas) {
+        return;
+      }
 
-      const context = canvas.getContext("2d");
+      const context =
+        canvas.getContext("2d");
 
-      if (!context) return;
+      if (!context) {
+        return;
+      }
 
-      const scaleX = image.naturalWidth / imageRect.width;
-      const scaleY = image.naturalHeight / imageRect.height;
+      const scaleX =
+        image.naturalWidth /
+        imageRect.width;
 
-      const cropLeftInPreview = cropBox.x;
-      const cropTopInPreview = cropBox.y;
+      const scaleY =
+        image.naturalHeight /
+        imageRect.height;
 
-      const imageLeftInPreview = imageRect.left - previewRect.left;
-      const imageTopInPreview = imageRect.top - previewRect.top;
+      const cropLeftInPreview =
+        cropBox.x;
+
+      const cropTopInPreview =
+        cropBox.y;
+
+      const imageLeftInPreview =
+        imageRect.left -
+        previewRect.left;
+
+      const imageTopInPreview =
+        imageRect.top -
+        previewRect.top;
 
       const sourceX = Math.max(
         0,
-        (cropLeftInPreview - imageLeftInPreview) * scaleX
+        (cropLeftInPreview -
+          imageLeftInPreview) *
+          scaleX,
       );
 
       const sourceY = Math.max(
         0,
-        (cropTopInPreview - imageTopInPreview) * scaleY
+        (cropTopInPreview -
+          imageTopInPreview) *
+          scaleY,
       );
 
       const sourceSize = Math.min(
         cropBox.size * scaleX,
         cropBox.size * scaleY,
         image.naturalWidth - sourceX,
-        image.naturalHeight - sourceY
+        image.naturalHeight - sourceY,
       );
 
       const outputSize = 300;
@@ -349,7 +601,12 @@ export default function SettingsPage() {
       canvas.width = outputSize;
       canvas.height = outputSize;
 
-      context.clearRect(0, 0, outputSize, outputSize);
+      context.clearRect(
+        0,
+        0,
+        outputSize,
+        outputSize,
+      );
 
       context.drawImage(
         image,
@@ -360,17 +617,19 @@ export default function SettingsPage() {
         0,
         0,
         outputSize,
-        outputSize
+        outputSize,
       );
 
-      const croppedImage = canvas.toDataURL("image/png");
+      const croppedImage =
+        canvas.toDataURL("image/png");
 
       setAvatar(croppedImage);
       setCropImage(null);
       setIsSaved(false);
 
       if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        fileInputRef.current.value =
+          "";
       }
     };
 
@@ -385,10 +644,41 @@ export default function SettingsPage() {
     }
   };
 
-  const isImageAvatar = avatar.startsWith("data:image");
+  const handleWithdrawal = () => {
+    setWithdrawalError("");
+
+    startWithdrawalTransition(
+      async () => {
+        try {
+          const result =
+            await deleteAccount();
+
+          if (result?.error) {
+            setWithdrawalError(
+              result.error,
+            );
+          }
+        } catch (error) {
+          console.error(
+            "退会処理エラー:",
+            error,
+          );
+
+          setWithdrawalError(
+            "退会処理中にエラーが発生しました。",
+          );
+        }
+      },
+    );
+  };
+
+  const isImageAvatar =
+    avatar.startsWith("data:image");
 
   if (!isLoaded) {
-    return <main className={styles.page}></main>;
+    return (
+      <main className={styles.page} />
+    );
   }
 
   return (
@@ -398,31 +688,56 @@ export default function SettingsPage() {
           type="button"
           className={styles.backButton}
           onClick={() => router.back()}
+          aria-label="前の画面へ戻る"
         >
           ‹
         </button>
+
         <h1>アプリ設定</h1>
       </header>
 
       <section className={styles.section}>
-        <p className={styles.label}>PROFILE</p>
-        <h2 className={styles.sectionTitle}>プロフィール設定</h2>
+        <p className={styles.label}>
+          PROFILE
+        </p>
+
+        <h2
+          className={styles.sectionTitle}
+        >
+          プロフィール設定
+        </h2>
 
         <div className={styles.card}>
-          <div className={styles.currentProfile}>
-            <div className={styles.avatarBox}>
+          <div
+            className={
+              styles.currentProfile
+            }
+          >
+            <div
+              className={styles.avatarBox}
+            >
               {isImageAvatar ? (
-                <img src={avatar} alt="プロフィール画像" />
+                <img
+                  src={avatar}
+                  alt="プロフィール画像"
+                />
               ) : (
                 <span>{avatar}</span>
               )}
             </div>
 
             <div>
-              <p className={styles.subText}>現在のプロフィール</p>
+              <p
+                className={styles.subText}
+              >
+                現在のプロフィール
+              </p>
+
               <p
                 className={`${styles.profileName} ${
-                  !nickname ? styles.placeholderName : ""
+                  !nickname
+                    ? styles.placeholderName
+                    : ""
                 }`}
               >
                 {nickname || "Name"}
@@ -430,48 +745,87 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className={styles.divider} />
+          <div
+            className={styles.divider}
+          />
 
-          <div className={styles.formBlock}>
-            <label className={styles.inputLabel}>ニックネーム</label>
+          <div
+            className={styles.formBlock}
+          >
+            <label
+              className={styles.inputLabel}
+              htmlFor="nickname"
+            >
+              ニックネーム
+            </label>
 
-            <div className={styles.inputWrap}>
+            <div
+              className={styles.inputWrap}
+            >
               <input
+                id="nickname"
                 value={nickname}
                 maxLength={12}
-                onChange={(event) => handleNicknameChange(event.target.value)}
+                onChange={(event) =>
+                  handleNicknameChange(
+                    event.target.value,
+                  )
+                }
                 placeholder="Name"
               />
-              <span>{nickname.length} / 12</span>
+
+              <span>
+                {nickname.length} / 12
+              </span>
             </div>
 
-            <p className={styles.helpText}>
+            <p
+              className={styles.helpText}
+            >
               研究室のメンバーに表示される名前です
             </p>
           </div>
 
-          <div className={styles.divider} />
+          <div
+            className={styles.divider}
+          />
 
-          <div className={styles.iconHeader}>
+          <div
+            className={styles.iconHeader}
+          >
             <h3>アイコン</h3>
+
             <p>
-              選択中： <span>{isImageAvatar ? "画像" : avatar}</span>
+              選択中：
+              <span>
+                {isImageAvatar
+                  ? "画像"
+                  : avatar}
+              </span>
             </p>
           </div>
 
-          <div className={styles.iconGrid}>
-            {DEFAULT_ICONS.map((icon) => (
-              <button
-                key={icon}
-                type="button"
-                className={`${styles.iconItem} ${
-                  avatar === icon ? styles.selected : ""
-                }`}
-                onClick={() => handleSelectIcon(icon)}
-              >
-                <span>{icon}</span>
-              </button>
-            ))}
+          <div
+            className={styles.iconGrid}
+          >
+            {DEFAULT_ICONS.map(
+              (icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  className={`${styles.iconItem} ${
+                    avatar === icon
+                      ? styles.selected
+                      : ""
+                  }`}
+                  onClick={() =>
+                    handleSelectIcon(icon)
+                  }
+                >
+                  <span>{icon}</span>
+                </button>
+              ),
+            )}
           </div>
 
           <input
@@ -479,56 +833,114 @@ export default function SettingsPage() {
             type="file"
             accept="image/*"
             className={styles.hiddenInput}
-            onChange={(event) => handleUploadImage(event.target.files?.[0])}
+            onChange={(event) =>
+              handleUploadImage(
+                event.target.files?.[0],
+              )
+            }
           />
 
           <button
             type="button"
-            className={styles.uploadButton}
-            onClick={() => fileInputRef.current?.click()}
+            className={
+              styles.uploadButton
+            }
+            onClick={() =>
+              fileInputRef.current?.click()
+            }
           >
             ＋ 画像をアップロード
           </button>
         </div>
 
-        <button type="button" className={styles.saveButton} onClick={handleSave}>
+        <button
+          type="button"
+          className={styles.saveButton}
+          onClick={handleSave}
+        >
           変更を保存
         </button>
 
-        {isSaved && <p className={styles.savedMessage}>保存しました</p>}
+        {isSaved && (
+          <p
+            className={
+              styles.savedMessage
+            }
+          >
+            保存しました
+          </p>
+        )}
       </section>
 
       <section className={styles.section}>
-        <p className={styles.label}>NOTIFICATION</p>
-        <h2 className={styles.sectionTitle}>通知の設定</h2>
+        <p className={styles.label}>
+          NOTIFICATION
+        </p>
+
+        <h2
+          className={styles.sectionTitle}
+        >
+          通知の設定
+        </h2>
 
         <div className={styles.card}>
           <NotificationRow
             icon="🔔"
             title="お知らせ通知"
             text="研究室からのお知らせを受け取ります"
-            checked={notifications.notice}
-            onClick={() => toggleNotification("notice")}
+            checked={
+              notifications.notice
+            }
+            onClick={() =>
+              toggleNotification("notice")
+            }
           />
 
-          <div className={styles.rowDivider} />
+          <div
+            className={styles.rowDivider}
+          />
 
           <NotificationRow
             icon="⭐"
             title="チャレンジ通知"
             text="新しいミッションや達成状況を通知します"
-            checked={notifications.challenge}
-            onClick={() => toggleNotification("challenge")}
+            checked={
+              notifications.challenge
+            }
+            onClick={() =>
+              toggleNotification(
+                "challenge",
+              )
+            }
           />
         </div>
       </section>
-      <section className={styles.section}>
-        <p className={styles.label}>ACCOUNT</p>
-        <h2 className={styles.sectionTitle}>アカウント設定</h2>
 
-        <div className={styles.withdrawalCard}>
-          <div className={styles.withdrawalText}>
-            <h3>サービスから退会する</h3>
+      <section className={styles.section}>
+        <p className={styles.label}>
+          ACCOUNT
+        </p>
+
+        <h2
+          className={styles.sectionTitle}
+        >
+          アカウント設定
+        </h2>
+
+        <div
+          className={
+            styles.withdrawalCard
+          }
+        >
+          <div
+            className={
+              styles.withdrawalText
+            }
+          >
+            <h3>
+              サービスから退会する
+            </h3>
+
             <p>
               退会すると、プロフィールやこれまでの記録が削除されます。
             </p>
@@ -536,91 +948,260 @@ export default function SettingsPage() {
 
           <button
             type="button"
-            className={styles.withdrawalButton}
+            className={
+              styles.withdrawalButton
+            }
+            onClick={() => {
+              setWithdrawalError("");
+              setIsWithdrawalModalOpen(
+                true,
+              );
+            }}
           >
             退会する
           </button>
         </div>
       </section>
-      
-      {cropImage && (
-        <div className={styles.cropOverlay}>
-          <div className={styles.cropModal}>
-            <h2>画像を調整</h2>
-            <p>
-              四角い枠を動かして、アイコンに表示する範囲を選択してください。
-              角を動かすと1:1のままサイズ変更できます。
-            </p>
 
-            <div ref={previewRef} className={styles.cropPreview}>
-              <img
-                ref={cropImageRef}
-                src={cropImage}
-                alt="調整中の画像"
-                onLoad={handleCropImageLoad}
-                draggable={false}
-              />
-
-              <div
-                className={styles.cropBox}
-                style={{
-                  left: `${cropBox.x}px`,
-                  top: `${cropBox.y}px`,
-                  width: `${cropBox.size}px`,
-                  height: `${cropBox.size}px`,
-                }}
-                onPointerDown={handleStartMove}
-              >
-                <button
-                  type="button"
-                  className={`${styles.cropHandle} ${styles.topLeft}`}
-                  onPointerDown={(event) => handleStartResize(event, "topLeft")}
-                  aria-label="左上を調整"
-                />
-                <button
-                  type="button"
-                  className={`${styles.cropHandle} ${styles.topRight}`}
-                  onPointerDown={(event) => handleStartResize(event, "topRight")}
-                  aria-label="右上を調整"
-                />
-                <button
-                  type="button"
-                  className={`${styles.cropHandle} ${styles.bottomLeft}`}
-                  onPointerDown={(event) =>
-                    handleStartResize(event, "bottomLeft")
-                  }
-                  aria-label="左下を調整"
-                />
-                <button
-                  type="button"
-                  className={`${styles.cropHandle} ${styles.bottomRight}`}
-                  onPointerDown={(event) =>
-                    handleStartResize(event, "bottomRight")
-                  }
-                  aria-label="右下を調整"
-                />
-              </div>
+      {isWithdrawalModalOpen && (
+        <div
+          className={
+            styles.withdrawalOverlay
+          }
+          onClick={() => {
+            if (
+              !isWithdrawalPending
+            ) {
+              setIsWithdrawalModalOpen(
+                false,
+              );
+            }
+          }}
+        >
+          <div
+            className={
+              styles.withdrawalModal
+            }
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="withdrawal-title"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <div
+              className={
+                styles.withdrawalWarningIcon
+              }
+            >
+              ⚠️
             </div>
 
-            <div className={styles.cropButtons}>
+            <h2 id="withdrawal-title">
+              本当に退会しますか？
+            </h2>
+
+            <p>
+              退会すると、プロフィール、イベント、参加情報などのデータがすべて削除されます。
+            </p>
+
+            <p
+              className={
+                styles.withdrawalImportantText
+              }
+            >
+              この操作は元に戻せません。
+            </p>
+
+            {withdrawalError && (
+              <p
+                className={
+                  styles.withdrawalError
+                }
+              >
+                {withdrawalError}
+              </p>
+            )}
+
+            <div
+              className={
+                styles.withdrawalModalButtons
+              }
+            >
               <button
                 type="button"
-                className={styles.cancelCropButton}
-                onClick={handleCancelCrop}
+                className={
+                  styles.keepAccountButton
+                }
+                disabled={
+                  isWithdrawalPending
+                }
+                onClick={() =>
+                  setIsWithdrawalModalOpen(
+                    false,
+                  )
+                }
               >
                 キャンセル
               </button>
 
               <button
                 type="button"
-                className={styles.applyCropButton}
-                onClick={handleApplyCrop}
+                className={
+                  styles.confirmWithdrawalButton
+                }
+                disabled={
+                  isWithdrawalPending
+                }
+                onClick={handleWithdrawal}
+              >
+                {isWithdrawalPending
+                  ? "退会処理中..."
+                  : "退会する"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {cropImage && (
+        <div
+          className={styles.cropOverlay}
+        >
+          <div
+            className={styles.cropModal}
+          >
+            <h2>画像を調整</h2>
+
+            <p>
+              四角い枠を動かして、アイコンに表示する範囲を選択してください。
+              角を動かすと1:1のままサイズ変更できます。
+            </p>
+
+            <div
+              ref={previewRef}
+              className={
+                styles.cropPreview
+              }
+            >
+              <img
+                ref={cropImageRef}
+                src={cropImage}
+                alt="調整中の画像"
+                onLoad={
+                  handleCropImageLoad
+                }
+                draggable={false}
+              />
+
+              <div
+                className={
+                  styles.cropBox
+                }
+                style={{
+                  left: `${cropBox.x}px`,
+                  top: `${cropBox.y}px`,
+                  width: `${cropBox.size}px`,
+                  height: `${cropBox.size}px`,
+                }}
+                onPointerDown={
+                  handleStartMove
+                }
+              >
+                <button
+                  type="button"
+                  className={`${styles.cropHandle} ${styles.topLeft}`}
+                  onPointerDown={(
+                    event,
+                  ) =>
+                    handleStartResize(
+                      event,
+                      "topLeft",
+                    )
+                  }
+                  aria-label="左上を調整"
+                />
+
+                <button
+                  type="button"
+                  className={`${styles.cropHandle} ${styles.topRight}`}
+                  onPointerDown={(
+                    event,
+                  ) =>
+                    handleStartResize(
+                      event,
+                      "topRight",
+                    )
+                  }
+                  aria-label="右上を調整"
+                />
+
+                <button
+                  type="button"
+                  className={`${styles.cropHandle} ${styles.bottomLeft}`}
+                  onPointerDown={(
+                    event,
+                  ) =>
+                    handleStartResize(
+                      event,
+                      "bottomLeft",
+                    )
+                  }
+                  aria-label="左下を調整"
+                />
+
+                <button
+                  type="button"
+                  className={`${styles.cropHandle} ${styles.bottomRight}`}
+                  onPointerDown={(
+                    event,
+                  ) =>
+                    handleStartResize(
+                      event,
+                      "bottomRight",
+                    )
+                  }
+                  aria-label="右下を調整"
+                />
+              </div>
+            </div>
+
+            <div
+              className={
+                styles.cropButtons
+              }
+            >
+              <button
+                type="button"
+                className={
+                  styles.cancelCropButton
+                }
+                onClick={
+                  handleCancelCrop
+                }
+              >
+                キャンセル
+              </button>
+
+              <button
+                type="button"
+                className={
+                  styles.applyCropButton
+                }
+                onClick={
+                  handleApplyCrop
+                }
               >
                 この画像にする
               </button>
             </div>
 
-            <canvas ref={cropCanvasRef} className={styles.hiddenCanvas} />
+            <canvas
+              ref={cropCanvasRef}
+              className={
+                styles.hiddenCanvas
+              }
+            />
           </div>
         </div>
       )}
@@ -644,21 +1225,53 @@ function NotificationRow({
   onClick,
 }: NotificationRowProps) {
   return (
-    <div className={styles.notificationRow}>
-      <div className={styles.notificationLeft}>
-        <div className={styles.notificationIcon}>{icon}</div>
+    <div
+      className={
+        styles.notificationRow
+      }
+    >
+      <div
+        className={
+          styles.notificationLeft
+        }
+      >
+        <div
+          className={
+            styles.notificationIcon
+          }
+        >
+          {icon}
+        </div>
 
         <div>
-          <p className={styles.notificationTitle}>{title}</p>
-          <p className={styles.notificationText}>{text}</p>
+          <p
+            className={
+              styles.notificationTitle
+            }
+          >
+            {title}
+          </p>
+
+          <p
+            className={
+              styles.notificationText
+            }
+          >
+            {text}
+          </p>
         </div>
       </div>
 
       <button
         type="button"
-        className={`${styles.switch} ${checked ? styles.switchOn : ""}`}
+        className={`${styles.switch} ${
+          checked
+            ? styles.switchOn
+            : ""
+        }`}
         onClick={onClick}
         aria-label={`${title}を切り替える`}
+        aria-pressed={checked}
       >
         <span />
       </button>
@@ -666,6 +1279,13 @@ function NotificationRow({
   );
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
+function clamp(
+  value: number,
+  min: number,
+  max: number,
+) {
+  return Math.min(
+    Math.max(value, min),
+    max,
+  );
 }
