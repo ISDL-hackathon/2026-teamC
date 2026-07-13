@@ -655,3 +655,29 @@
     grid-template-columns: 1fr;
   }
 }
+
+.loadingText {
+  margin: 0;
+  padding-top: 120px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.saveButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.saveError {
+  margin: 12px 0 0;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #d52e34;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.6;
+  text-align: center;
+}

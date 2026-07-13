@@ -7,7 +7,11 @@ import {
   useTransition,
 } from "react";
 import { useRouter } from "next/navigation";
-import { deleteAccount } from "./actions";
+import {
+  deleteAccount,
+  getProfileSettings,
+  saveProfileSettings,
+} from "./actions";
 import styles from "./settings.module.css";
 
 const DEFAULT_ICONS = [
@@ -93,6 +97,14 @@ export default function SettingsPage() {
   const [isLoaded, setIsLoaded] =
     useState(false);
 
+  const [saveError, setSaveError] =
+    useState("");
+
+  const [
+    isSavePending,
+    startSaveTransition,
+  ] = useTransition();
+
   const [cropImage, setCropImage] =
     useState<string | null>(null);
 
@@ -122,37 +134,51 @@ export default function SettingsPage() {
   ] = useTransition();
 
   useEffect(() => {
-    const savedName =
-      localStorage.getItem("nickname");
+    const loadProfileSettings =
+      async () => {
+        const result =
+          await getProfileSettings();
 
-    const savedAvatar =
-      localStorage.getItem("avatar");
+        if (
+          result.error ||
+          !result.data
+        ) {
+          setSaveError(
+            result.error ??
+              "プロフィールを読み込めませんでした。",
+          );
 
-    const savedNotifications =
-      localStorage.getItem("notifications");
+          setIsLoaded(true);
+          return;
+        }
 
-    if (savedName) {
-      setNickname(savedName);
-    }
-
-    if (savedAvatar) {
-      setAvatar(savedAvatar);
-    }
-
-    if (savedNotifications) {
-      try {
-        setNotifications(
-          JSON.parse(savedNotifications),
+        setNickname(
+          result.data.nickname,
         );
-      } catch {
-        setNotifications({
-          notice: true,
-          challenge: true,
-        });
-      }
-    }
 
-    setIsLoaded(true);
+        if (result.data.avatarUrl) {
+          setAvatar(
+            result.data.avatarUrl,
+          );
+        } else {
+          setAvatar(
+            result.data.selectedIcon ||
+              DEFAULT_ICONS[0],
+          );
+        }
+
+        setNotifications({
+          notice:
+            result.data.noticeEnabled,
+          challenge:
+            result.data
+              .challengeNoticeEnabled,
+        });
+
+        setIsLoaded(true);
+      };
+
+    void loadProfileSettings();
   }, []);
 
   useEffect(() => {
@@ -223,10 +249,14 @@ export default function SettingsPage() {
         dragState.corner ===
         "bottomRight"
       ) {
-        const amount = Math.max(dx, dy);
+        const amount = Math.max(
+          dx,
+          dy,
+        );
 
         nextSize = clamp(
-          dragState.startSize + amount,
+          dragState.startSize +
+            amount,
           minSize,
           maxSize,
         );
@@ -245,7 +275,8 @@ export default function SettingsPage() {
         );
 
         nextSize = clamp(
-          dragState.startSize + amount,
+          dragState.startSize +
+            amount,
           minSize,
           maxSize,
         );
@@ -268,7 +299,8 @@ export default function SettingsPage() {
         );
 
         nextSize = clamp(
-          dragState.startSize + amount,
+          dragState.startSize +
+            amount,
           minSize,
           maxSize,
         );
@@ -291,7 +323,8 @@ export default function SettingsPage() {
         );
 
         nextSize = clamp(
-          dragState.startSize + amount,
+          dragState.startSize +
+            amount,
           minSize,
           maxSize,
         );
@@ -381,6 +414,7 @@ export default function SettingsPage() {
 
     setNickname(value);
     setIsSaved(false);
+    setSaveError("");
   };
 
   const handleSelectIcon = (
@@ -388,6 +422,7 @@ export default function SettingsPage() {
   ) => {
     setAvatar(icon);
     setIsSaved(false);
+    setSaveError("");
   };
 
   const handleUploadImage = (
@@ -400,6 +435,9 @@ export default function SettingsPage() {
     if (
       !file.type.startsWith("image/")
     ) {
+      setSaveError(
+        "画像ファイルを選択してください。",
+      );
       return;
     }
 
@@ -426,39 +464,60 @@ export default function SettingsPage() {
   const toggleNotification = (
     key: keyof NotificationState,
   ) => {
-    setNotifications((prev) => {
-      const next = {
-        ...prev,
-        [key]: !prev[key],
-      };
+    setNotifications((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
 
-      setIsSaved(false);
-
-      return next;
-    });
+    setIsSaved(false);
+    setSaveError("");
   };
 
+  const isImageAvatar =
+    avatar.startsWith("data:image") ||
+    avatar.startsWith("http://") ||
+    avatar.startsWith("https://");
+
   const handleSave = () => {
-    localStorage.setItem(
-      "nickname",
-      nickname,
+    setSaveError("");
+    setIsSaved(false);
+
+    if (isImageAvatar) {
+      setSaveError(
+        "画像アイコンの保存はまだ準備中です。絵文字アイコンを選択してください。",
+      );
+
+      return;
+    }
+
+    startSaveTransition(
+      async () => {
+        const result =
+          await saveProfileSettings(
+            nickname,
+            avatar,
+            notifications.notice,
+            notifications.challenge,
+          );
+
+        if (result.error) {
+          setSaveError(
+            result.error,
+          );
+          return;
+        }
+
+        setNickname(
+          nickname.trim(),
+        );
+
+        setIsSaved(true);
+
+        setTimeout(() => {
+          setIsSaved(false);
+        }, 1800);
+      },
     );
-
-    localStorage.setItem(
-      "avatar",
-      avatar,
-    );
-
-    localStorage.setItem(
-      "notifications",
-      JSON.stringify(notifications),
-    );
-
-    setIsSaved(true);
-
-    setTimeout(() => {
-      setIsSaved(false);
-    }, 1800);
   };
 
   const handleCropImageLoad = () => {
@@ -626,6 +685,7 @@ export default function SettingsPage() {
       setAvatar(croppedImage);
       setCropImage(null);
       setIsSaved(false);
+      setSaveError("");
 
       if (fileInputRef.current) {
         fileInputRef.current.value =
@@ -672,12 +732,13 @@ export default function SettingsPage() {
     );
   };
 
-  const isImageAvatar =
-    avatar.startsWith("data:image");
-
   if (!isLoaded) {
     return (
-      <main className={styles.page} />
+      <main className={styles.page}>
+        <p className={styles.loadingText}>
+          読み込み中...
+        </p>
+      </main>
     );
   }
 
@@ -701,9 +762,7 @@ export default function SettingsPage() {
           PROFILE
         </p>
 
-        <h2
-          className={styles.sectionTitle}
-        >
+        <h2 className={styles.sectionTitle}>
           プロフィール設定
         </h2>
 
@@ -727,9 +786,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <p
-                className={styles.subText}
-              >
+              <p className={styles.subText}>
                 現在のプロフィール
               </p>
 
@@ -745,13 +802,9 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div
-            className={styles.divider}
-          />
+          <div className={styles.divider} />
 
-          <div
-            className={styles.formBlock}
-          >
+          <div className={styles.formBlock}>
             <label
               className={styles.inputLabel}
               htmlFor="nickname"
@@ -759,9 +812,7 @@ export default function SettingsPage() {
               ニックネーム
             </label>
 
-            <div
-              className={styles.inputWrap}
-            >
+            <div className={styles.inputWrap}>
               <input
                 id="nickname"
                 value={nickname}
@@ -779,20 +830,14 @@ export default function SettingsPage() {
               </span>
             </div>
 
-            <p
-              className={styles.helpText}
-            >
+            <p className={styles.helpText}>
               研究室のメンバーに表示される名前です
             </p>
           </div>
 
-          <div
-            className={styles.divider}
-          />
+          <div className={styles.divider} />
 
-          <div
-            className={styles.iconHeader}
-          >
+          <div className={styles.iconHeader}>
             <h3>アイコン</h3>
 
             <p>
@@ -805,9 +850,7 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <div
-            className={styles.iconGrid}
-          >
+          <div className={styles.iconGrid}>
             {DEFAULT_ICONS.map(
               (icon) => (
                 <button
@@ -842,9 +885,7 @@ export default function SettingsPage() {
 
           <button
             type="button"
-            className={
-              styles.uploadButton
-            }
+            className={styles.uploadButton}
             onClick={() =>
               fileInputRef.current?.click()
             }
@@ -857,16 +898,21 @@ export default function SettingsPage() {
           type="button"
           className={styles.saveButton}
           onClick={handleSave}
+          disabled={isSavePending}
         >
-          変更を保存
+          {isSavePending
+            ? "保存中..."
+            : "変更を保存"}
         </button>
 
+        {saveError && (
+          <p className={styles.saveError}>
+            {saveError}
+          </p>
+        )}
+
         {isSaved && (
-          <p
-            className={
-              styles.savedMessage
-            }
-          >
+          <p className={styles.savedMessage}>
             保存しました
           </p>
         )}
@@ -877,9 +923,7 @@ export default function SettingsPage() {
           NOTIFICATION
         </p>
 
-        <h2
-          className={styles.sectionTitle}
-        >
+        <h2 className={styles.sectionTitle}>
           通知の設定
         </h2>
 
@@ -896,9 +940,7 @@ export default function SettingsPage() {
             }
           />
 
-          <div
-            className={styles.rowDivider}
-          />
+          <div className={styles.rowDivider} />
 
           <NotificationRow
             icon="⭐"
@@ -921,9 +963,7 @@ export default function SettingsPage() {
           ACCOUNT
         </p>
 
-        <h2
-          className={styles.sectionTitle}
-        >
+        <h2 className={styles.sectionTitle}>
           アカウント設定
         </h2>
 
@@ -1065,12 +1105,8 @@ export default function SettingsPage() {
       )}
 
       {cropImage && (
-        <div
-          className={styles.cropOverlay}
-        >
-          <div
-            className={styles.cropModal}
-          >
+        <div className={styles.cropOverlay}>
+          <div className={styles.cropModal}>
             <h2>画像を調整</h2>
 
             <p>
@@ -1095,9 +1131,7 @@ export default function SettingsPage() {
               />
 
               <div
-                className={
-                  styles.cropBox
-                }
+                className={styles.cropBox}
                 style={{
                   left: `${cropBox.x}px`,
                   top: `${cropBox.y}px`,
