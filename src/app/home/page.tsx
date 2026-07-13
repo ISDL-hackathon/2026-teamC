@@ -15,6 +15,8 @@ export default function Home() {
       return;
     }
 
+     
+
     setCheckedInToday(true);
     setCheckInCount((prev) => prev + 1);
     setPoints((prev) => prev + 50);
@@ -22,6 +24,10 @@ export default function Home() {
 
     alert('チェックインしました！ +50pt');
   };
+
+   const handleLeave = () => {
+  alert('退席機能は現在準備中です');
+};
 
   return (
     <main className="app">
@@ -59,6 +65,35 @@ export default function Home() {
           <span>人</span>
         </div>
       </section>
+
+      <button
+  type="button"
+  className="leaveButton"
+  onClick={handleLeave}
+  aria-label="研究室から退席する"
+>
+  <span className="leaveIcon" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 17l5-5-5-5" />
+      <path d="M15 12H3" />
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+    </svg>
+  </span>
+
+  <span className="leaveText">
+    <strong>退席する</strong>
+    <small>研究室からの退出を記録</small>
+  </span>
+</button>
 
       <section className="sectionHeader">
         <div>
