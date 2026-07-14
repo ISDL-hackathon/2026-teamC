@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import {
   deleteAccount,
   getProfileSettings,
+  saveAvatarImage,
   saveProfileSettings,
   updateNoticeSetting,
 } from "./actions";
@@ -143,6 +144,11 @@ export default function SettingsPage() {
   const [
     isNoticePending,
     startNoticeTransition,
+  ] = useTransition();
+
+  const [
+    isAvatarPending,
+    startAvatarTransition,
   ] = useTransition();
 
   useEffect(() => {
@@ -545,16 +551,7 @@ export default function SettingsPage() {
   const handleSave = () => {
     setSaveError("");
     setIsSaved(false);
-
-    if (isImageAvatar) {
-      setSaveError(
-        "画像アイコンの保存はまだ準備中です。絵文字アイコンを選択してください。",
-      );
-
-      return;
-    }
-
-    startSaveTransition(
+startSaveTransition(
       async () => {
         const result =
           await saveProfileSettings(
@@ -654,121 +651,155 @@ export default function SettingsPage() {
     });
   };
 
+
   const handleApplyCrop = () => {
-    if (
-      !cropImage ||
-      !previewRef.current ||
-      !cropImageRef.current
-    ) {
+  if (
+    !cropImage ||
+    !previewRef.current ||
+    !cropImageRef.current
+  ) {
+    return;
+  }
+
+  const previewRect =
+    previewRef.current.getBoundingClientRect();
+
+  const imageRect =
+    cropImageRef.current.getBoundingClientRect();
+
+  const image = new Image();
+
+  image.onload = () => {
+    const canvas =
+      cropCanvasRef.current;
+
+    if (!canvas) {
       return;
     }
 
-    const previewRect =
-      previewRef.current.getBoundingClientRect();
+    const context =
+      canvas.getContext("2d");
 
-    const imageRect =
-      cropImageRef.current.getBoundingClientRect();
+    if (!context) {
+      return;
+    }
 
-    const image = new Image();
+    const scaleX =
+      image.naturalWidth /
+      imageRect.width;
 
-    image.onload = () => {
-      const canvas =
-        cropCanvasRef.current;
+    const scaleY =
+      image.naturalHeight /
+      imageRect.height;
 
-      if (!canvas) {
-        return;
-      }
+    const cropLeftInPreview =
+      cropBox.x;
 
-      const context =
-        canvas.getContext("2d");
+    const cropTopInPreview =
+      cropBox.y;
 
-      if (!context) {
-        return;
-      }
+    const imageLeftInPreview =
+      imageRect.left -
+      previewRect.left;
 
-      const scaleX =
-        image.naturalWidth /
-        imageRect.width;
+    const imageTopInPreview =
+      imageRect.top -
+      previewRect.top;
 
-      const scaleY =
-        image.naturalHeight /
-        imageRect.height;
+    const sourceX = Math.max(
+      0,
+      (
+        cropLeftInPreview -
+        imageLeftInPreview
+      ) * scaleX,
+    );
 
-      const cropLeftInPreview =
-        cropBox.x;
+    const sourceY = Math.max(
+      0,
+      (
+        cropTopInPreview -
+        imageTopInPreview
+      ) * scaleY,
+    );
 
-      const cropTopInPreview =
-        cropBox.y;
+    const sourceSize = Math.min(
+      cropBox.size * scaleX,
+      cropBox.size * scaleY,
+      image.naturalWidth - sourceX,
+      image.naturalHeight - sourceY,
+    );
 
-      const imageLeftInPreview =
-        imageRect.left -
-        previewRect.left;
+    const outputSize = 300;
 
-      const imageTopInPreview =
-        imageRect.top -
-        previewRect.top;
+    canvas.width = outputSize;
+    canvas.height = outputSize;
 
-      const sourceX = Math.max(
-        0,
-        (cropLeftInPreview -
-          imageLeftInPreview) *
-          scaleX,
-      );
+    context.clearRect(
+      0,
+      0,
+      outputSize,
+      outputSize,
+    );
 
-      const sourceY = Math.max(
-        0,
-        (cropTopInPreview -
-          imageTopInPreview) *
-          scaleY,
-      );
+    context.drawImage(
+      image,
+      sourceX,
+      sourceY,
+      sourceSize,
+      sourceSize,
+      0,
+      0,
+      outputSize,
+      outputSize,
+    );
 
-      const sourceSize = Math.min(
-        cropBox.size * scaleX,
-        cropBox.size * scaleY,
-        image.naturalWidth - sourceX,
-        image.naturalHeight - sourceY,
-      );
+    const croppedImage =
+      canvas.toDataURL("image/png");
 
-      const outputSize = 300;
+    setSaveError("");
 
-      canvas.width = outputSize;
-      canvas.height = outputSize;
+    startAvatarTransition(
+      async () => {
+        const result =
+          await saveAvatarImage(
+            croppedImage,
+          );
 
-      context.clearRect(
-        0,
-        0,
-        outputSize,
-        outputSize,
-      );
+        if (
+          result.error ||
+          !result.avatarUrl
+        ) {
+          setSaveError(
+            result.error ??
+              "プロフィール画像を保存できませんでした。",
+          );
 
-      context.drawImage(
-        image,
-        sourceX,
-        sourceY,
-        sourceSize,
-        sourceSize,
-        0,
-        0,
-        outputSize,
-        outputSize,
-      );
+          return;
+        }
 
-      const croppedImage =
-        canvas.toDataURL("image/png");
+        setAvatar(
+          result.avatarUrl,
+        );
 
-      setAvatar(croppedImage);
-      setCropImage(null);
-      setIsSaved(false);
-      setSaveError("");
+        setCropImage(null);
+        setIsSaved(true);
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value =
-          "";
-      }
-    };
+        if (fileInputRef.current) {
+          fileInputRef.current.value =
+            "";
+        }
 
-    image.src = cropImage;
+        setTimeout(() => {
+          setIsSaved(false);
+        }, 1800);
+      },
+    );
   };
+
+  image.src = cropImage;
+};
+
+
 
   const handleCancelCrop = () => {
     setCropImage(null);
@@ -1364,6 +1395,7 @@ export default function SettingsPage() {
                 onClick={
                   handleCancelCrop
                 }
+                disabled={isAvatarPending}
               >
                 キャンセル
               </button>
@@ -1376,8 +1408,11 @@ export default function SettingsPage() {
                 onClick={
                   handleApplyCrop
                 }
+                disabled={isAvatarPending}
               >
-                この画像にする
+                {isAvatarPending
+                  ? "画像を保存中..."
+                  : "この画像にする"}
               </button>
             </div>
 

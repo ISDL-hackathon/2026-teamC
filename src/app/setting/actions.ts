@@ -42,6 +42,11 @@ type UpdateNoticeSettingResult = {
   error: string | null;
 };
 
+type SaveAvatarImageResult = {
+  avatarUrl?: string;
+  error: string | null;
+};
+
 export async function getProfileSettings():
 Promise<ProfileSettingsResult> {
   const supabase = await createClient();
@@ -194,7 +199,12 @@ export async function saveProfileSettings(
     };
   }
 
+  const isAvatarUrl =
+    selectedIcon.startsWith("https://") ||
+    selectedIcon.startsWith("http://");
+
   if (
+    !isAvatarUrl &&
     !DEFAULT_SETTING_ICONS.includes(
       selectedIcon,
     )
@@ -205,24 +215,33 @@ export async function saveProfileSettings(
     };
   }
 
+  const profileUpdates = {
+    nickname:
+      trimmedNickname,
+    notice_enabled:
+      noticeEnabled,
+    challenge_notice_enabled:
+      challengeNoticeEnabled,
+    updated_at:
+      new Date().toISOString(),
+    ...(isAvatarUrl
+      ? {
+          avatar_url:
+            selectedIcon,
+        }
+      : {
+          selected_icon:
+            selectedIcon,
+          avatar_url: null,
+        }),
+  };
+
   const {
     data: updatedProfile,
     error: updateError,
   } = await supabase
     .from("profiles")
-    .update({
-      nickname:
-        trimmedNickname,
-      selected_icon:
-        selectedIcon,
-      avatar_url: null,
-      notice_enabled:
-        noticeEnabled,
-      challenge_notice_enabled:
-        challengeNoticeEnabled,
-      updated_at:
-        new Date().toISOString(),
-    })
+    .update(profileUpdates)
     .eq("id", user.id)
     .select("id")
     .single();
@@ -326,6 +345,141 @@ export async function updateNoticeSetting(
   }
 
   return {
+    error: null,
+  };
+}
+
+export async function saveAvatarImage(
+  imageDataUrl: string,
+): Promise<SaveAvatarImageResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      error:
+        "ログイン情報を確認できませんでした。",
+    };
+  }
+
+  const match = imageDataUrl.match(
+    /^data:(image\/(?:png|jpeg|webp));base64,(.+)$/,
+  );
+
+  if (!match) {
+    return {
+      error:
+        "画像データを確認できませんでした。",
+    };
+  }
+
+  const contentType = match[1];
+  const base64Data = match[2];
+
+  const imageBuffer =
+    Buffer.from(
+      base64Data,
+      "base64",
+    );
+
+  const maxFileSize =
+    5 * 1024 * 1024;
+
+  if (
+    imageBuffer.length >
+    maxFileSize
+  ) {
+    return {
+      error:
+        "画像サイズは5MB以下にしてください。",
+    };
+  }
+
+  const extension =
+    contentType === "image/jpeg"
+      ? "jpg"
+      : contentType === "image/webp"
+        ? "webp"
+        : "png";
+
+  const filePath =
+    `${user.id}/avatar.${extension}`;
+
+  const {
+    error: uploadError,
+  } = await supabase.storage
+    .from("avatars")
+    .upload(
+      filePath,
+      imageBuffer,
+      {
+        contentType,
+        upsert: true,
+        cacheControl: "3600",
+      },
+    );
+
+  if (uploadError) {
+    console.error(
+      "プロフィール画像アップロードエラー:",
+      uploadError,
+    );
+
+    return {
+      error:
+        "プロフィール画像を保存できませんでした。",
+    };
+  }
+
+  const {
+    data: publicUrlData,
+  } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(filePath);
+
+  const avatarUrl =
+    `${publicUrlData.publicUrl}?t=${Date.now()}`;
+
+  const {
+    data: updatedProfile,
+    error: profileUpdateError,
+  } = await supabase
+    .from("profiles")
+    .update({
+      avatar_url:
+        avatarUrl,
+      updated_at:
+        new Date().toISOString(),
+    })
+    .eq("id", user.id)
+    .select("id")
+    .single();
+
+  if (
+    profileUpdateError ||
+    !updatedProfile
+  ) {
+    console.error(
+      "プロフィール画像URL保存エラー:",
+      profileUpdateError,
+    );
+
+    await supabase.storage
+      .from("avatars")
+      .remove([filePath]);
+
+    return {
+      error:
+        "プロフィール画像の情報を保存できませんでした。",
+    };
+  }
+
+  return {
+    avatarUrl,
     error: null,
   };
 }
