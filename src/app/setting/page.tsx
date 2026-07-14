@@ -11,6 +11,7 @@ import {
   deleteAccount,
   getProfileSettings,
   saveProfileSettings,
+  updateNoticeSetting,
 } from "./actions";
 import styles from "./settings.module.css";
 
@@ -137,6 +138,11 @@ export default function SettingsPage() {
   const [
     isWithdrawalPending,
     startWithdrawalTransition,
+  ] = useTransition();
+
+  const [
+    isNoticePending,
+    startNoticeTransition,
   ] = useTransition();
 
   useEffect(() => {
@@ -478,13 +484,57 @@ export default function SettingsPage() {
   const toggleNotification = (
     key: keyof NotificationState,
   ) => {
+    if (key === "challenge") {
+      setNotifications((prev) => ({
+        ...prev,
+        challenge: !prev.challenge,
+      }));
+
+      setIsSaved(false);
+      setSaveError("");
+      return;
+    }
+
+    const previousValue =
+      notifications.notice;
+
+    const nextValue =
+      !previousValue;
+
     setNotifications((prev) => ({
       ...prev,
-      [key]: !prev[key],
+      notice: nextValue,
     }));
 
-    setIsSaved(false);
     setSaveError("");
+
+    startNoticeTransition(
+      async () => {
+        const result =
+          await updateNoticeSetting(
+            nextValue,
+          );
+
+        if (result.error) {
+          setNotifications((prev) => ({
+            ...prev,
+            notice: previousValue,
+          }));
+
+          setSaveError(
+            result.error,
+          );
+
+          return;
+        }
+
+        setIsSaved(true);
+
+        setTimeout(() => {
+          setIsSaved(false);
+        }, 1800);
+      },
+    );
   };
 
   const isImageAvatar =
@@ -1025,12 +1075,19 @@ export default function SettingsPage() {
           <NotificationRow
             icon="🔔"
             title="お知らせ通知"
-            text="研究室からのお知らせを受け取ります"
+            text={
+              isNoticePending
+                ? "通知設定を保存しています"
+                : "研究室からのお知らせを受け取ります"
+            }
             checked={
               notifications.notice
             }
             onClick={() =>
               toggleNotification("notice")
+            }
+            disabled={
+              isNoticePending
             }
           />
 
@@ -1343,6 +1400,7 @@ type NotificationRowProps = {
   text: string;
   checked: boolean;
   onClick: () => void;
+  disabled?: boolean;
 };
 
 function NotificationRow({
@@ -1351,6 +1409,7 @@ function NotificationRow({
   text,
   checked,
   onClick,
+  disabled = false,
 }: NotificationRowProps) {
   return (
     <div
@@ -1398,6 +1457,7 @@ function NotificationRow({
             : ""
         }`}
         onClick={onClick}
+        disabled={disabled}
         aria-label={`${title}を切り替える`}
         aria-pressed={checked}
       >
