@@ -16,6 +16,29 @@ export async function enterLab() {
     };
   }
 
+  /*
+   * 昨日以前から入室中のままになっているデータを、
+   * 翌日の0時に退席した扱いへ更新する
+   */
+  const { error: cleanupError } = await supabase.rpc(
+    "close_stale_attendance",
+  );
+
+  if (cleanupError) {
+    console.error(
+      "前日以前の入室データ整理エラー:",
+      cleanupError,
+    );
+
+    return {
+      success: false,
+      message: "入室状態を確認できませんでした。",
+    };
+  }
+
+  /*
+   * ログイン中のユーザーが現在入室中か確認する
+   */
   const { data: activeAttendance, error: checkError } =
     await supabase
       .from("attendance_records")
@@ -25,7 +48,10 @@ export async function enterLab() {
       .maybeSingle();
 
   if (checkError) {
-    console.error("入室状態の確認エラー:", checkError);
+    console.error(
+      "入室状態の確認エラー:",
+      checkError,
+    );
 
     return {
       success: false,
@@ -40,6 +66,9 @@ export async function enterLab() {
     };
   }
 
+  /*
+   * 新しい入室データを追加する
+   */
   const { error: insertError } = await supabase
     .from("attendance_records")
     .insert({
@@ -47,7 +76,10 @@ export async function enterLab() {
     });
 
   if (insertError) {
-    console.error("入室登録エラー:", insertError);
+    console.error(
+      "入室登録エラー:",
+      insertError,
+    );
 
     return {
       success: false,
