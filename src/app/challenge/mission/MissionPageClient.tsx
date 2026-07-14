@@ -185,30 +185,6 @@ if (answerData.isCorrect) {
     }
   }, 2500);
 }
-
-      
-
-
-      if (result.data.isCorrect) {
-        setShowCelebration(true);
-
-        window.setTimeout(() => {
-          setShowCelebration(false);
-
-          if (
-            previousStampCount <
-              TOTAL_STAMP_COUNT &&
-            result.data.stampCount ===
-              TOTAL_STAMP_COUNT
-          ) {
-            setShowStampComplete(true);
-
-            window.setTimeout(() => {
-              setShowStampComplete(false);
-            }, 3500);
-          }
-        }, 2500);
-      }
     });
   };
 
