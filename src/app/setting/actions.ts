@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import {
+  createClient as createAdminClient,
+} from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 const DEFAULT_SETTING_ICONS = [
@@ -36,7 +38,12 @@ type SaveProfileSettingsResult = {
   error: string | null;
 };
 
-export async function getProfileSettings(): Promise<ProfileSettingsResult> {
+type UpdateNoticeSettingResult = {
+  error: string | null;
+};
+
+export async function getProfileSettings():
+Promise<ProfileSettingsResult> {
   const supabase = await createClient();
 
   const {
@@ -46,11 +53,15 @@ export async function getProfileSettings(): Promise<ProfileSettingsResult> {
 
   if (userError || !user) {
     return {
-      error: "ログイン情報を確認できませんでした。",
+      error:
+        "ログイン情報を確認できませんでした。",
     };
   }
 
-  const { data, error } = await supabase
+  const {
+    data,
+    error,
+  } = await supabase
     .from("profiles")
     .select(`
       nickname,
@@ -69,7 +80,8 @@ export async function getProfileSettings(): Promise<ProfileSettingsResult> {
     );
 
     return {
-      error: "プロフィールを取得できませんでした。",
+      error:
+        "プロフィールを取得できませんでした。",
     };
   }
 
@@ -92,25 +104,31 @@ export async function getProfileSettings(): Promise<ProfileSettingsResult> {
     );
 
     return {
-      error: "クイズ情報を取得できませんでした。",
+      error:
+        "クイズ情報を取得できませんでした。",
     };
   }
 
   return {
     data: {
-      nickname: data.nickname ?? "",
+      nickname:
+        data.nickname ?? "",
       selectedIcon:
         data.selected_icon ??
         DEFAULT_SETTING_ICONS[0],
-      avatarUrl: data.avatar_url ?? null,
+      avatarUrl:
+        data.avatar_url ?? null,
       noticeEnabled:
         data.notice_enabled ?? true,
       challengeNoticeEnabled:
-        data.challenge_notice_enabled ?? true,
+        data.challenge_notice_enabled ??
+        true,
       favoriteSubject:
-        missionProfile?.favorite_subject ?? "",
+        missionProfile
+          ?.favorite_subject ?? "",
       favoriteColor:
-        missionProfile?.favorite_color ?? "",
+        missionProfile
+          ?.favorite_color ?? "",
     },
   };
 }
@@ -132,23 +150,30 @@ export async function saveProfileSettings(
 
   if (userError || !user) {
     return {
-      error: "ログイン情報を確認できませんでした。",
+      error:
+        "ログイン情報を確認できませんでした。",
     };
   }
 
-  const trimmedNickname = nickname.trim();
+  const trimmedNickname =
+    nickname.trim();
+
   const trimmedFavoriteSubject =
     favoriteSubject.trim();
+
   const trimmedFavoriteColor =
     favoriteColor.trim();
 
   if (!trimmedNickname) {
     return {
-      error: "ニックネームを入力してください。",
+      error:
+        "ニックネームを入力してください。",
     };
   }
 
-  if (trimmedNickname.length > 12) {
+  if (
+    trimmedNickname.length > 12
+  ) {
     return {
       error:
         "ニックネームは12文字以内で入力してください。",
@@ -157,19 +182,26 @@ export async function saveProfileSettings(
 
   if (!trimmedFavoriteSubject) {
     return {
-      error: "好きな教科を入力してください。",
+      error:
+        "好きな教科を入力してください。",
     };
   }
 
   if (!trimmedFavoriteColor) {
     return {
-      error: "好きな色を入力してください。",
+      error:
+        "好きな色を入力してください。",
     };
   }
 
-  if (!DEFAULT_SETTING_ICONS.includes(selectedIcon)) {
+  if (
+    !DEFAULT_SETTING_ICONS.includes(
+      selectedIcon,
+    )
+  ) {
     return {
-      error: "アイコンを正しく選択してください。",
+      error:
+        "アイコンを正しく選択してください。",
     };
   }
 
@@ -179,19 +211,26 @@ export async function saveProfileSettings(
   } = await supabase
     .from("profiles")
     .update({
-      nickname: trimmedNickname,
-      selected_icon: selectedIcon,
+      nickname:
+        trimmedNickname,
+      selected_icon:
+        selectedIcon,
       avatar_url: null,
-      notice_enabled: noticeEnabled,
+      notice_enabled:
+        noticeEnabled,
       challenge_notice_enabled:
         challengeNoticeEnabled,
-      updated_at: new Date().toISOString(),
+      updated_at:
+        new Date().toISOString(),
     })
     .eq("id", user.id)
     .select("id")
     .single();
 
-  if (updateError || !updatedProfile) {
+  if (
+    updateError ||
+    !updatedProfile
+  ) {
     console.error(
       "プロフィール保存エラー:",
       updateError,
@@ -203,23 +242,24 @@ export async function saveProfileSettings(
     };
   }
 
-  const { error: missionProfileError } =
-    await supabase
-      .from("mission_profiles")
-      .upsert(
-        {
-          user_id: user.id,
-          favorite_subject:
-            trimmedFavoriteSubject,
-          favorite_color:
-            trimmedFavoriteColor,
-          updated_at:
-            new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id",
-        },
-      );
+  const {
+    error: missionProfileError,
+  } = await supabase
+    .from("mission_profiles")
+    .upsert(
+      {
+        user_id: user.id,
+        favorite_subject:
+          trimmedFavoriteSubject,
+        favorite_color:
+          trimmedFavoriteColor,
+        updated_at:
+          new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      },
+    );
 
   if (missionProfileError) {
     console.error(
@@ -238,7 +278,9 @@ export async function saveProfileSettings(
   };
 }
 
-export async function deleteAccount(): Promise<DeleteAccountResult> {
+export async function updateNoticeSetting(
+  noticeEnabled: boolean,
+): Promise<UpdateNoticeSettingResult> {
   const supabase = await createClient();
 
   const {
@@ -248,17 +290,74 @@ export async function deleteAccount(): Promise<DeleteAccountResult> {
 
   if (userError || !user) {
     return {
-      error: "ログイン情報を確認できませんでした。",
+      error:
+        "ログイン情報を確認できませんでした。",
+    };
+  }
+
+  const {
+    data: updatedProfile,
+    error,
+  } = await supabase
+    .from("profiles")
+    .update({
+      notice_enabled:
+        noticeEnabled,
+      updated_at:
+        new Date().toISOString(),
+    })
+    .eq("id", user.id)
+    .select("id")
+    .single();
+
+  if (
+    error ||
+    !updatedProfile
+  ) {
+    console.error(
+      "通知設定保存エラー:",
+      error,
+    );
+
+    return {
+      error:
+        "通知設定を保存できませんでした。",
+    };
+  }
+
+  return {
+    error: null,
+  };
+}
+
+export async function deleteAccount():
+Promise<DeleteAccountResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      error:
+        "ログイン情報を確認できませんでした。",
     };
   }
 
   const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env
+      .NEXT_PUBLIC_SUPABASE_URL;
 
   const secretKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
+    process.env
+      .SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !secretKey) {
+  if (
+    !supabaseUrl ||
+    !secretKey
+  ) {
     console.error(
       "Supabaseの管理者用環境変数が設定されていません。",
     );
@@ -269,21 +368,26 @@ export async function deleteAccount(): Promise<DeleteAccountResult> {
     };
   }
 
-  const adminSupabase = createAdminClient(
-    supabaseUrl,
-    secretKey,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
+  const adminSupabase =
+    createAdminClient(
+      supabaseUrl,
+      secretKey,
+      {
+        auth: {
+          autoRefreshToken:
+            false,
+          persistSession:
+            false,
+        },
       },
-    },
-  );
-
-  const { error: deleteError } =
-    await adminSupabase.auth.admin.deleteUser(
-      user.id,
     );
+
+  const {
+    error: deleteError,
+  } =
+    await adminSupabase
+      .auth.admin
+      .deleteUser(user.id);
 
   if (deleteError) {
     console.error(
