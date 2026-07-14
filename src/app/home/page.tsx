@@ -13,6 +13,17 @@ export default async function HomePage() {
     redirect("/login");
   }
 
+  const { error: cleanupError } = await supabase.rpc(
+  "close_stale_attendance",
+);
+
+ if (cleanupError) {
+  console.error(
+    "前日以前の入室データ整理エラー:",
+    cleanupError,
+  );
+ }
+
   // 現在入室中の人数を取得
   const { count: labCount, error: countError } = await supabase
     .from("attendance_records")
