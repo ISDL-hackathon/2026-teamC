@@ -42,10 +42,40 @@ export default async function HomePage() {
     );
   }
 
+  // 今月の開始日時を作成
+  const now = new Date();
+
+  const startOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+  );
+
+  // 今月の自分のチェックイン回数を取得
+  const {
+    count: monthlyCheckInCount,
+    error: monthlyCheckInError,
+  } = await supabase
+    .from("attendance_records")
+    .select("id", {
+      count: "exact",
+      head: true,
+    })
+    .eq("user_id", user.id)
+    .gte("entered_at", startOfMonth.toISOString());
+
+  if (monthlyCheckInError) {
+    console.error(
+      "今月のチェックイン回数取得エラー:",
+      monthlyCheckInError,
+    );
+  }
+
   return (
     <HomePageClient
       labCount={labCount ?? 0}
       isInLab={Boolean(activeAttendance)}
+      checkInCount={monthlyCheckInCount ?? 0}
     />
   );
 }
