@@ -46,40 +46,41 @@ export default function HomePageClient({
       <Header />
 
       <section className="hero">
-        <div>
-          <p className="sectionLabel heroLabel">
-            LAB STATUS
-          </p>
+  <div className="heroContent">
+    <p className="sectionLabel heroLabel">
+      LAB STATUS
+    </p>
 
-          <h2>
-            研究室は今
-            <br />
-            {labCount}人です
-          </h2>
+    <h2>
+      研究室は今
+      <br />
+      {labCount}人です
+    </h2>
 
-          <p className="heroText">
-            現在研究室にいる人数を確認できます。
-            <br />
-            混雑状況の目安として活用してください。
-          </p>
-        </div>
+    <p className="heroText">
+      現在研究室にいる人数を確認できます。
+      <br />
+      混雑状況の目安として活用してください。
+    </p>
 
-        <div className="heroEmoji">👩‍💻</div>
-      </section>
+    <div className="statusCard heroStatusCard">
+  <div className="pinBox">📍</div>
 
-      <section className="statusCard">
-        <div className="pinBox">📍</div>
+  <div className="statusText">
+    <h3>現在の研究室状況</h3>
+    <p>最新の入退室情報を表示中</p>
+  </div>
 
-        <div className="statusText">
-          <h3>現在の研究室状況</h3>
-          <p>最新の入退室情報を表示中</p>
-        </div>
+  <div className="heroCount">
+    {labCount}人
+  </div>
+</div>
+  </div>
 
-        <div className="countBox">
-          <strong>{labCount}</strong>
-          <span>人</span>
-        </div>
-      </section>
+  <div className="heroEmoji">👩‍💻</div>
+</section>
+
+      
 
       <button
         type="button"
