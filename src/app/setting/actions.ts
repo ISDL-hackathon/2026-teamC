@@ -26,6 +26,8 @@ type ProfileSettingsResult = {
     avatarUrl: string | null;
     noticeEnabled: boolean;
     challengeNoticeEnabled: boolean;
+    favoriteSubject: string;
+    favoriteColor: string;
   };
   error?: string;
 };
@@ -61,10 +63,36 @@ export async function getProfileSettings(): Promise<ProfileSettingsResult> {
     .single();
 
   if (error || !data) {
-    console.error("プロフィール取得エラー:", error);
+    console.error(
+      "プロフィール取得エラー:",
+      error,
+    );
 
     return {
       error: "プロフィールを取得できませんでした。",
+    };
+  }
+
+  const {
+    data: missionProfile,
+    error: missionProfileError,
+  } = await supabase
+    .from("mission_profiles")
+    .select(`
+      favorite_subject,
+      favorite_color
+    `)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (missionProfileError) {
+    console.error(
+      "ミッションプロフィール取得エラー:",
+      missionProfileError,
+    );
+
+    return {
+      error: "クイズ情報を取得できませんでした。",
     };
   }
 
@@ -72,11 +100,17 @@ export async function getProfileSettings(): Promise<ProfileSettingsResult> {
     data: {
       nickname: data.nickname ?? "",
       selectedIcon:
-        data.selected_icon ?? DEFAULT_SETTING_ICONS[0],
+        data.selected_icon ??
+        DEFAULT_SETTING_ICONS[0],
       avatarUrl: data.avatar_url ?? null,
-      noticeEnabled: data.notice_enabled ?? true,
+      noticeEnabled:
+        data.notice_enabled ?? true,
       challengeNoticeEnabled:
         data.challenge_notice_enabled ?? true,
+      favoriteSubject:
+        missionProfile?.favorite_subject ?? "",
+      favoriteColor:
+        missionProfile?.favorite_color ?? "",
     },
   };
 }
@@ -86,6 +120,8 @@ export async function saveProfileSettings(
   selectedIcon: string,
   noticeEnabled: boolean,
   challengeNoticeEnabled: boolean,
+  favoriteSubject: string,
+  favoriteColor: string,
 ): Promise<SaveProfileSettingsResult> {
   const supabase = await createClient();
 
@@ -101,6 +137,10 @@ export async function saveProfileSettings(
   }
 
   const trimmedNickname = nickname.trim();
+  const trimmedFavoriteSubject =
+    favoriteSubject.trim();
+  const trimmedFavoriteColor =
+    favoriteColor.trim();
 
   if (!trimmedNickname) {
     return {
@@ -110,7 +150,20 @@ export async function saveProfileSettings(
 
   if (trimmedNickname.length > 12) {
     return {
-      error: "ニックネームは12文字以内で入力してください。",
+      error:
+        "ニックネームは12文字以内で入力してください。",
+    };
+  }
+
+  if (!trimmedFavoriteSubject) {
+    return {
+      error: "好きな教科を入力してください。",
+    };
+  }
+
+  if (!trimmedFavoriteColor) {
+    return {
+      error: "好きな色を入力してください。",
     };
   }
 
@@ -145,7 +198,38 @@ export async function saveProfileSettings(
     );
 
     return {
-      error: "プロフィールを保存できませんでした。",
+      error:
+        "プロフィールを保存できませんでした。",
+    };
+  }
+
+  const { error: missionProfileError } =
+    await supabase
+      .from("mission_profiles")
+      .upsert(
+        {
+          user_id: user.id,
+          favorite_subject:
+            trimmedFavoriteSubject,
+          favorite_color:
+            trimmedFavoriteColor,
+          updated_at:
+            new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id",
+        },
+      );
+
+  if (missionProfileError) {
+    console.error(
+      "ミッションプロフィール保存エラー:",
+      missionProfileError,
+    );
+
+    return {
+      error:
+        "クイズ情報を保存できませんでした。",
     };
   }
 
@@ -180,7 +264,8 @@ export async function deleteAccount(): Promise<DeleteAccountResult> {
     );
 
     return {
-      error: "退会処理の設定に問題があります。",
+      error:
+        "退会処理の設定に問題があります。",
     };
   }
 
@@ -207,7 +292,8 @@ export async function deleteAccount(): Promise<DeleteAccountResult> {
     );
 
     return {
-      error: "アカウントを削除できませんでした。",
+      error:
+        "アカウントを削除できませんでした。",
     };
   }
 
