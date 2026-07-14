@@ -142,25 +142,52 @@ export default function MissionPageClient({
           selectedAnswer,
         );
 
-      if (result.error || !result.data) {
-        setSubmitError(
-          result.error ??
-            "回答を保存できませんでした。",
-        );
+    
+        if (result.error || !result.data) {
+  setSubmitError(
+    result.error ??
+      "回答を保存できませんでした。",
+  );
 
-        return;
-      }
+  return;
+}
 
-      setIsAnswered(true);
-      setIsCorrect(
-        result.data.isCorrect,
-      );
-      setCorrectAnswer(
-        result.data.correctAnswer,
-      );
-      setStampCount(
-        result.data.stampCount,
-      );
+const answerData = result.data;
+
+setIsAnswered(true);
+setIsCorrect(
+  answerData.isCorrect,
+);
+setCorrectAnswer(
+  answerData.correctAnswer,
+);
+setStampCount(
+  answerData.stampCount,
+);
+
+if (answerData.isCorrect) {
+  setShowCelebration(true);
+
+  window.setTimeout(() => {
+    setShowCelebration(false);
+
+    if (
+      previousStampCount <
+        TOTAL_STAMP_COUNT &&
+      answerData.stampCount ===
+        TOTAL_STAMP_COUNT
+    ) {
+      setShowStampComplete(true);
+
+      window.setTimeout(() => {
+        setShowStampComplete(false);
+      }, 3500);
+    }
+  }, 2500);
+}
+
+      
+
 
       if (result.data.isCorrect) {
         setShowCelebration(true);
