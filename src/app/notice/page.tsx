@@ -1,344 +1,314 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import NoticePageClient, {
+  type NoticeCategory,
+  type NoticeItem,
+} from "./NoticePageClient";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import "./notice.css";
-
-type NoticeCategory = "team" | "mission" | "point" | "remind";
-
-type NoticeItem = {
+type NotificationRow = {
   id: number;
+  notification_type:
+    | "notice"
+    | "challenge"
+    | "team"
+    | "point";
+  title: string;
+  message: string;
+  link_url: string | null;
+  is_read: boolean;
+  created_at: string;
+};
+
+function getNoticeDisplay(
+  notificationType:
+    NotificationRow["notification_type"],
+): {
   category: NoticeCategory;
   categoryLabel: string;
-  title: string;
-  description: string;
-  time: string;
   icon: string;
   actionLabel?: string;
-  isRead: boolean;
-};
+} {
+  switch (notificationType) {
+    case "team":
+      return {
+        category: "team",
+        categoryLabel: "チーム",
+        icon: "👥",
+        actionLabel: "投稿を見る",
+      };
 
-const initialTodayNotices: NoticeItem[] = [
-  {
-    id: 1,
-    category: "team",
-    categoryLabel: "チーム",
-    title: "田中先輩が新しい募集を投稿しました",
-    description: "「今日、飲みに行ける人！」という投稿があります。",
-    time: "10分",
-    icon: "👥",
-    actionLabel: "投稿を見る",
-    isRead: false,
-  },
-  {
-    id: 2,
-    category: "mission",
-    categoryLabel: "ミッション",
-    title: "今日の先輩が更新されました",
+    case "challenge":
+      return {
+        category: "mission",
+        categoryLabel:
+          "ミッション",
+        icon: "⭐",
+        actionLabel:
+          "ミッションを見る",
+      };
+
+    case "point":
+      return {
+        category: "point",
+        categoryLabel:
+          "ポイント",
+        icon: "🎁",
+        actionLabel:
+          "ポイントを見る",
+      };
+
+    case "notice":
+    default:
+      return {
+        category: "remind",
+        categoryLabel:
+          "お知らせ",
+        icon: "🔔",
+        actionLabel:
+          "内容を確認",
+      };
+  }
+}
+
+function getJapanDateParts(
+  dateValue: string,
+) {
+  const date = new Date(dateValue);
+
+  const formatter =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      },
+    );
+
+  const parts =
+    formatter.formatToParts(
+      date,
+    );
+
+  const year =
+    parts.find(
+      (part) =>
+        part.type === "year",
+    )?.value ?? "";
+
+  const month =
+    parts.find(
+      (part) =>
+        part.type === "month",
+    )?.value ?? "";
+
+  const day =
+    parts.find(
+      (part) =>
+        part.type === "day",
+    )?.value ?? "";
+
+  return {
+    dateKey:
+      `${year}-${month}-${day}`,
+    year,
+    month,
+    day,
+  };
+}
+
+function getTodayJapanKey() {
+  return getJapanDateParts(
+    new Date().toISOString(),
+  ).dateKey;
+}
+
+function formatNoticeTime(
+  createdAt: string,
+  isToday: boolean,
+) {
+  const createdDate =
+    new Date(createdAt);
+
+  if (
+    Number.isNaN(
+      createdDate.getTime(),
+    )
+  ) {
+    return "";
+  }
+
+  if (isToday) {
+    return new Intl.DateTimeFormat(
+      "ja-JP",
+      {
+        timeZone: "Asia/Tokyo",
+        hour: "2-digit",
+        minute: "2-digit",
+      },
+    ).format(createdDate);
+  }
+
+  return new Intl.DateTimeFormat(
+    "ja-JP",
+    {
+      timeZone: "Asia/Tokyo",
+      month: "numeric",
+      day: "numeric",
+    },
+  ).format(createdDate);
+}
+
+function convertNotification(
+  notification:
+    NotificationRow,
+  todayKey: string,
+): NoticeItem {
+  const display =
+    getNoticeDisplay(
+      notification.notification_type,
+    );
+
+  const notificationDate =
+    getJapanDateParts(
+      notification.created_at,
+    );
+
+  const isToday =
+    notificationDate.dateKey ===
+    todayKey;
+
+  return {
+    id: notification.id,
+    category:
+      display.category,
+    categoryLabel:
+      display.categoryLabel,
+    title: notification.title,
     description:
-      "田中先輩のプロフィールと、話しかけるきっかけを確認できます。",
-    time: "1時間",
-    icon: "★",
-    actionLabel: "今日の先輩を見る",
-    isRead: false,
-  },
-  {
-    id: 3,
-    category: "point",
-    categoryLabel: "ポイント",
-    title: "来室スタンプで20pt獲得しました",
-    description: "現在のポイント残高は1,520ptです。",
-    time: "3時間",
-    icon: "🎁",
-    actionLabel: "おさいふを確認",
-    isRead: false,
-  },
-];
-
-const initialPastNotices: NoticeItem[] = [
-  {
-    id: 4,
-    category: "remind",
-    categoryLabel: "リマインド",
-    title: "参加予定のイベントが30分後に始まります",
-    description: "お昼ごはんの募集は12時30分開始です。",
-    time: "7月6日",
-    icon: "⏰",
-    isRead: true,
-  },
-  {
-    id: 5,
-    category: "mission",
-    categoryLabel: "ミッション",
-    title: "交流ミッションを達成しました",
-    description: "ミッションクリアにより30pt獲得しました。",
-    time: "7月5日",
-    icon: "★",
-    isRead: true,
-  },
-];
-
-export default function NoticePage() {
-  const router = useRouter();
-
-  const [todayNotices, setTodayNotices] =
-    useState<NoticeItem[]>(initialTodayNotices);
-
-  const [pastNotices, setPastNotices] =
-    useState<NoticeItem[]>(initialPastNotices);
-
-  const allNotices = [...todayNotices, ...pastNotices];
-
-  const unreadNoticeCount = allNotices.filter(
-    (notice) => !notice.isRead,
-  ).length;
-
-  const markNoticeAsRead = (id: number) => {
-    setTodayNotices((currentNotices) =>
-      currentNotices.map((notice) => {
-        if (notice.id !== id || notice.isRead) {
-          return notice;
-        }
-
-        return {
-          ...notice,
-          isRead: true,
-        };
-      }),
-    );
-
-    setPastNotices((currentNotices) =>
-      currentNotices.map((notice) => {
-        if (notice.id !== id || notice.isRead) {
-          return notice;
-        }
-
-        return {
-          ...notice,
-          isRead: true,
-        };
-      }),
-    );
+      notification.message,
+    time: formatNoticeTime(
+      notification.created_at,
+      isToday,
+    ),
+    icon: display.icon,
+    actionLabel:
+      notification.link_url
+        ? display.actionLabel
+        : undefined,
+    linkUrl:
+      notification.link_url,
+    isRead:
+      notification.is_read,
   };
-
-  const markAllNoticesAsRead = () => {
-    setTodayNotices((currentNotices) =>
-      currentNotices.map((notice) => ({
-        ...notice,
-        isRead: true,
-      })),
-    );
-
-    setPastNotices((currentNotices) =>
-      currentNotices.map((notice) => ({
-        ...notice,
-        isRead: true,
-      })),
-    );
-  };
-
-  const handleNoticeAction = (notice: NoticeItem) => {
-    markNoticeAsRead(notice.id);
-
-    /*
-      遷移先の画面が完成したら、以下のコメントを外して使用できます。
-
-      if (notice.category === "team") {
-        router.push("/challenge/team");
-        return;
-      }
-
-      if (notice.category === "mission") {
-        router.push("/challenge/mission");
-        return;
-      }
-
-      if (notice.category === "point") {
-        router.push("/challenge/point");
-        return;
-      }
-    */
-  };
-
-  return (
-    <main className="notice-page">
-      <div className="notice-container">
-        <header className="notice-header">
-          <button
-            type="button"
-            className="notice-back-button"
-            onClick={() => router.back()}
-            aria-label="前の画面に戻る"
-          >
-            <span aria-hidden="true">‹</span>
-          </button>
-
-          <h1 className="notice-header-title">通知</h1>
-
-          <button
-            type="button"
-            className="notice-read-all-button"
-            onClick={markAllNoticesAsRead}
-            disabled={unreadNoticeCount === 0}
-          >
-            すべて既読
-          </button>
-        </header>
-
-        <div className="notice-content">
-          <NoticeSection
-            title="今日"
-            notices={todayNotices}
-            showUnreadCount
-            onRead={markNoticeAsRead}
-            onAction={handleNoticeAction}
-          />
-
-          <NoticeSection
-            title="過去の通知"
-            notices={pastNotices}
-            showUnreadCount={false}
-            onRead={markNoticeAsRead}
-            onAction={handleNoticeAction}
-          />
-        </div>
-      </div>
-    </main>
-  );
 }
 
-type NoticeSectionProps = {
-  title: string;
-  notices: NoticeItem[];
-  showUnreadCount: boolean;
-  onRead: (id: number) => void;
-  onAction: (notice: NoticeItem) => void;
-};
+export default async function NoticePage() {
+  const supabase =
+    await createClient();
 
-function NoticeSection({
-  title,
-  notices,
-  showUnreadCount,
-  onRead,
-  onAction,
-}: NoticeSectionProps) {
-  const unreadCount = notices.filter(
-    (notice) => !notice.isRead,
-  ).length;
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  return (
-    <section className="notice-section">
-      <div className="notice-section-heading">
-        <h2>{title}</h2>
+  if (userError || !user) {
+    redirect("/login");
+  }
 
-        {showUnreadCount ? (
-          unreadCount > 0 && (
-            <span className="notice-count">
-              {unreadCount}件
-            </span>
-          )
-        ) : (
-          <span className="notice-count">
-            {notices.length}件
-          </span>
-        )}
-      </div>
+  const {
+    data,
+    error:
+      notificationsError,
+  } = await supabase
+    .from("notifications")
+    .select(
+      `
+        id,
+        notification_type,
+        title,
+        message,
+        link_url,
+        is_read,
+        created_at
+      `,
+    )
+    .eq("user_id", user.id)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(20);
 
-      <div className="notice-list">
-        {notices.map((notice) => (
-          <NoticeCard
-            key={notice.id}
-            notice={notice}
-            onRead={onRead}
-            onAction={onAction}
-          />
-        ))}
-      </div>
-    </section>
+  if (notificationsError) {
+    console.error(
+      "通知取得エラー:",
+      notificationsError,
+    );
+  }
+
+  const todayKey =
+    getTodayJapanKey();
+
+  const notifications = (
+    (data ?? []) as NotificationRow[]
+  ).map((notification) =>
+    convertNotification(
+      notification,
+      todayKey,
+    ),
   );
-}
 
-type NoticeCardProps = {
-  notice: NoticeItem;
-  onRead: (id: number) => void;
-  onAction: (notice: NoticeItem) => void;
-};
+  const todayNotices =
+    notifications.filter(
+      (_, index) => {
+        const source =
+          (data ??
+            [])[index] as
+            | NotificationRow
+            | undefined;
 
-function NoticeCard({
-  notice,
-  onRead,
-  onAction,
-}: NoticeCardProps) {
-  const handleCardClick = () => {
-    onRead(notice.id);
-  };
+        if (!source) {
+          return false;
+        }
+
+        return (
+          getJapanDateParts(
+            source.created_at,
+          ).dateKey === todayKey
+        );
+      },
+    );
+
+  const pastNotices =
+    notifications.filter(
+      (_, index) => {
+        const source =
+          (data ??
+            [])[index] as
+            | NotificationRow
+            | undefined;
+
+        if (!source) {
+          return false;
+        }
+
+        return (
+          getJapanDateParts(
+            source.created_at,
+          ).dateKey !== todayKey
+        );
+      },
+    );
 
   return (
-    <article
-      className={`notice-card ${
-        notice.isRead
-          ? "notice-card-read"
-          : "notice-card-unread"
-      }`}
-      onClick={handleCardClick}
-    >
-      <div
-        className={`notice-icon notice-icon-${notice.category}`}
-        aria-hidden="true"
-      >
-        {notice.icon}
-      </div>
-
-      <div className="notice-card-content">
-        <div className="notice-card-meta">
-          <span
-            className={`notice-category notice-category-${notice.category}`}
-          >
-            {notice.categoryLabel}
-          </span>
-
-          <div className="notice-time-wrapper">
-            <time className="notice-time">
-              {notice.time}
-            </time>
-
-            {!notice.isRead && (
-              <span
-                className="notice-unread-mark"
-                aria-label="未読"
-              />
-            )}
-          </div>
-        </div>
-
-        <h3 className="notice-title">
-          {notice.title}
-        </h3>
-
-        <p className="notice-description">
-          {notice.description}
-        </p>
-
-        {notice.actionLabel && (
-          <button
-            type="button"
-            className="notice-action-button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onAction(notice);
-            }}
-          >
-            <span>{notice.actionLabel}</span>
-
-            <span
-              className="notice-action-arrow"
-              aria-hidden="true"
-            >
-              ›
-            </span>
-          </button>
-        )}
-      </div>
-    </article>
+    <NoticePageClient
+      initialTodayNotices={
+        todayNotices
+      }
+      initialPastNotices={
+        pastNotices
+      }
+    />
   );
 }
