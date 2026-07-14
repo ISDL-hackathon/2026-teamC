@@ -14,16 +14,17 @@ import "./style.css";
 type HomePageClientProps = {
   labCount: number;
   isInLab: boolean;
+  checkInCount: number;
 };
 
 export default function HomePageClient({
   labCount,
   isInLab,
+  checkInCount,
 }: HomePageClientProps) {
   const router = useRouter();
 
   const [points] = useState(1250);
-  const [checkInCount] = useState(7);
 
   const [isLeaving, startLeaveTransition] =
     useTransition();
@@ -154,7 +155,7 @@ export default function HomePageClient({
 
         <div className="progressInfo">
           <span>進捗</span>
-          <span>{checkInCount} / 10日</span>
+          <span>{checkInCount} / 15日</span>
         </div>
 
         <div className="progressBar">
@@ -162,7 +163,7 @@ export default function HomePageClient({
             className="progressFill"
             style={{
               width: `${Math.min(
-                (checkInCount / 10) * 100,
+                (checkInCount / 15) * 100,
                 100,
               )}%`,
             }}
