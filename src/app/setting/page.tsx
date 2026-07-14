@@ -79,6 +79,12 @@ export default function SettingsPage() {
   const [nickname, setNickname] =
     useState("");
 
+  const [favoriteSubject, setFavoriteSubject] =
+    useState("");
+
+  const [favoriteColor, setFavoriteColor] =
+    useState("");
+
   const [avatar, setAvatar] = useState(
     DEFAULT_ICONS[0],
   );
@@ -174,6 +180,14 @@ export default function SettingsPage() {
             result.data
               .challengeNoticeEnabled,
         });
+
+        setFavoriteSubject(
+          result.data.favoriteSubject,
+        );
+
+        setFavoriteColor(
+          result.data.favoriteColor,
+        );
 
         setIsLoaded(true);
       };
@@ -498,6 +512,8 @@ export default function SettingsPage() {
             avatar,
             notifications.notice,
             notifications.challenge,
+            favoriteSubject,
+            favoriteColor,
           );
 
         if (result.error) {
@@ -509,6 +525,14 @@ export default function SettingsPage() {
 
         setNickname(
           nickname.trim(),
+        );
+
+        setFavoriteSubject(
+          favoriteSubject.trim(),
+        );
+
+        setFavoriteColor(
+          favoriteColor.trim(),
         );
 
         setIsSaved(true);
@@ -832,6 +856,76 @@ export default function SettingsPage() {
 
             <p className={styles.helpText}>
               研究室のメンバーに表示される名前です
+            </p>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.formBlock}>
+            <label
+              className={styles.inputLabel}
+              htmlFor="favorite-subject"
+            >
+              好きな教科
+            </label>
+
+            <div className={styles.inputWrap}>
+              <input
+                id="favorite-subject"
+                value={favoriteSubject}
+                maxLength={20}
+                onChange={(event) => {
+                  setFavoriteSubject(
+                    event.target.value,
+                  );
+                  setIsSaved(false);
+                  setSaveError("");
+                }}
+                placeholder="例：数学"
+              />
+
+              <span>
+                {favoriteSubject.length} / 20
+              </span>
+            </div>
+
+            <p className={styles.helpText}>
+              先輩クイズの問題に使用されます
+            </p>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.formBlock}>
+            <label
+              className={styles.inputLabel}
+              htmlFor="favorite-color"
+            >
+              好きな色
+            </label>
+
+            <div className={styles.inputWrap}>
+              <input
+                id="favorite-color"
+                value={favoriteColor}
+                maxLength={20}
+                onChange={(event) => {
+                  setFavoriteColor(
+                    event.target.value,
+                  );
+                  setIsSaved(false);
+                  setSaveError("");
+                }}
+                placeholder="例：青"
+              />
+
+              <span>
+                {favoriteColor.length} / 20
+              </span>
+            </div>
+
+            <p className={styles.helpText}>
+              先輩クイズの問題に使用されます
             </p>
           </div>
 
