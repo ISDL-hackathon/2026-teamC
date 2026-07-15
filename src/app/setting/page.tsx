@@ -1122,21 +1122,7 @@ startSaveTransition(
             }
           />
 
-          <div className={styles.rowDivider} />
-
-          <NotificationRow
-            icon="⭐"
-            title="チャレンジ通知"
-            text="新しいミッションや達成状況を通知します"
-            checked={
-              notifications.challenge
-            }
-            onClick={() =>
-              toggleNotification(
-                "challenge",
-              )
-            }
-          />
+         
         </div>
       </section>
 
