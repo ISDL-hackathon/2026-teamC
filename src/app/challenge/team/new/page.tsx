@@ -7,6 +7,12 @@ import styles from "./page.module.css";
 type NewEventPageProps = {
   searchParams: Promise<{
     error?: string;
+    title?: string;
+    comment?: string;
+    location?: string;
+    event_at?: string;
+    recruitment_deadline?: string;
+    capacity?: string;
   }>;
 };
 
@@ -23,7 +29,15 @@ export default async function NewEventPage({
     redirect("/login");
   }
 
-  const { error } = await searchParams;
+  const {
+  error,
+  title,
+  comment,
+  location,
+  event_at,
+  recruitment_deadline,
+  capacity,
+} = await searchParams;
 
   return (
     <>
@@ -66,6 +80,7 @@ export default async function NewEventPage({
             type="text"
             placeholder="例：ラーメン食べに行きませんか？"
             maxLength={100}
+            defaultValue={title ?? ""}
             required
           />
         </div>
@@ -81,6 +96,7 @@ export default async function NewEventPage({
             placeholder="気軽に参加してください！"
             maxLength={500}
             rows={4}
+            defaultValue={comment ?? ""}
           />
         </div>
 
@@ -96,6 +112,7 @@ export default async function NewEventPage({
             type="text"
             placeholder="例：研究室前"
             maxLength={100}
+            defaultValue={location ?? ""}
             required
           />
         </div>
@@ -110,6 +127,7 @@ export default async function NewEventPage({
             id="event_at"
             name="event_at"
             type="datetime-local"
+             defaultValue={event_at ?? ""}
             required
           />
         </div>
@@ -124,6 +142,9 @@ export default async function NewEventPage({
             id="recruitment_deadline"
             name="recruitment_deadline"
             type="datetime-local"
+             defaultValue={
+                  recruitment_deadline ?? ""
+                   }
             required
           />
         </div>
@@ -141,7 +162,7 @@ export default async function NewEventPage({
               type="number"
               min={1}
               max={100}
-              defaultValue={4}
+              defaultValue={capacity ?? 4}
               required
             />
 
