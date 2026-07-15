@@ -3,13 +3,55 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+type FormValues = {
+  title: string;
+  comment: string;
+  location: string;
+  eventAtValue: string;
+  deadlineValue: string;
+  capacityValue: number;
+};
+
+type ClearDateFields = {
+  eventAt?: boolean;
+  deadline?: boolean;
+};
+
+
+
+
 function redirectWithError(
   message: string,
+  values: FormValues,
+  clearDateFields: ClearDateFields = {},
 ): never {
+  const searchParams =
+    new URLSearchParams({
+      error: message,
+      title: values.title,
+      comment: values.comment,
+      location: values.location,
+      capacity: String(
+        values.capacityValue,
+      ),
+    });
+
+  if (!clearDateFields.eventAt) {
+    searchParams.set(
+      "event_at",
+      values.eventAtValue,
+    );
+  }
+
+  if (!clearDateFields.deadline) {
+    searchParams.set(
+      "recruitment_deadline",
+      values.deadlineValue,
+    );
+  }
+
   redirect(
-    `/challenge/team/new?error=${encodeURIComponent(
-      message,
-    )}`,
+    `/challenge/team/new?${searchParams.toString()}`,
   );
 }
 
@@ -54,27 +96,41 @@ export async function createEvent(
     formData.get("capacity"),
   );
 
+  const formValues: FormValues = {
+  title,
+  comment,
+  location,
+  eventAtValue,
+  deadlineValue,
+  capacityValue,
+};
+
+
   if (!title) {
     redirectWithError(
       "イベント名を入力してください。",
+      formValues,
     );
   }
 
   if (!location) {
     redirectWithError(
       "開催場所を入力してください。",
+      formValues,
     );
   }
 
   if (!eventAtValue) {
     redirectWithError(
       "開催日時を入力してください。",
+      formValues,
     );
   }
 
   if (!deadlineValue) {
     redirectWithError(
       "募集締切を入力してください。",
+      formValues,
     );
   }
 
@@ -87,6 +143,7 @@ export async function createEvent(
   ) {
     redirectWithError(
       "定員は1〜100人で入力してください。",
+      formValues,
     );
   }
 
@@ -109,6 +166,11 @@ export async function createEvent(
   ) {
     redirectWithError(
       "日時を正しく入力してください。",
+       formValues,
+  {
+    eventAt: true,
+    deadline: true,
+  },
     );
   }
 
@@ -117,6 +179,10 @@ export async function createEvent(
   if (eventAt <= now) {
     redirectWithError(
       "開催日時は現在より後にしてください。",
+    formValues,
+  {
+    eventAt: true,
+  },
     );
   }
 
@@ -125,6 +191,10 @@ export async function createEvent(
   ) {
     redirectWithError(
       "募集締切は現在より後にしてください。",
+      formValues,
+  {
+    deadline: true,
+  },
     );
   }
 
@@ -133,6 +203,10 @@ export async function createEvent(
   ) {
     redirectWithError(
       "募集締切は開催日時より前にしてください。",
+       formValues,
+  {
+    deadline: true,
+  },
     );
   }
 
@@ -166,6 +240,7 @@ export async function createEvent(
 
     redirectWithError(
       "イベントを投稿できませんでした。",
+       formValues,
     );
   }
 
@@ -211,6 +286,7 @@ export async function createEvent(
 
     redirectWithError(
       "投稿者の参加情報を登録できませんでした。",
+       formValues,
     );
   }
 
