@@ -188,7 +188,7 @@ export default async function PointPage() {
 
         <div className={styles.grow}>
           <h3 className={styles.goalTitle}>
-            次は15回達成を目指そう！
+            15回達成を目指そう！
           </h3>
 
           <div
