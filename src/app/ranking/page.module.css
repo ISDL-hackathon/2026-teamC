@@ -587,3 +587,55 @@
     font-size: 14px;
   }
 }
+.periodTabs button {
+  min-height: 42px;
+  padding: 8px;
+  border: none;
+  border-radius: 13px;
+  background: transparent;
+  color: #999999;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.periodTabs button:hover {
+  background: #fff4f4;
+  color: #ef3f43;
+}
+
+.periodTabs button:active {
+  transform: scale(0.97);
+}
+
+.periodTabs .activeTab {
+  background: #ef3f43;
+  color: #ffffff;
+  box-shadow: 0 5px 13px rgba(239, 63, 67, 0.23);
+}
+
+.periodTabs .activeTab:hover {
+  background: #ef3f43;
+  color: #ffffff;
+}
+.rankingContent {
+  animation: rankingContentFade 0.28s ease-out;
+}
+
+@keyframes rankingContentFade {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
