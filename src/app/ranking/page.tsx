@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Header from "../Header/Header";
+import BottomNav from "../BottomNav/BottomNav";
 import styles from "./page.module.css";
 
 type RankingPeriod =
@@ -281,6 +283,7 @@ export default function RankingPage() {
 
   return (
     <main className={styles.page}>
+         <Header />
       <section className={styles.content}>
         <div className={styles.heading}>
           <p className={styles.label}>
@@ -582,6 +585,7 @@ export default function RankingPage() {
           )}
         </div>
       </section>
+      <BottomNav />
     </main>
   );
 }
