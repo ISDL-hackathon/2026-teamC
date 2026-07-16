@@ -6,11 +6,34 @@ import {
   useTransition,
 } from "react";
 import { submitMissionAnswer } from "./actions";
+
+import GorillaCorrectEffect from "./effect/gorilla/GorillaCorrectEffect";
+import GorillaIncorrectEffect from "./effect/gorilla/GorillaIncorrectEffect";
+
+import RedPandaCorrectEffect from "./effect/red_panda/RedPandaCorrectEffect";
+import RedPandaIncorrectEffect from "./effect/red_panda/RedPandaIncorrectEffect";
+
+import HumanBabyCorrectEffect from "./effect/human_baby/HumanBabyCorrectEffect";
+import HumanBabyIncorrectEffect from "./effect/human_baby/HumanBabyIncorrectEffect";
+
+import CatCorrectEffect from "./effect/cat/CatCorrectEffect";
+import CatIncorrectEffect from "./effect/cat/CatIncorrectEffect";
+
+import AlpacaCorrectEffect from "./effect/alpaca/AlpacaCorrectEffect";
+import AlpacaIncorrectEffect from "./effect/alpaca/AlpacaIncorrectEffect";
+
 import styles from "./page.module.css";
 
 type QuestionType =
   | "favorite_subject"
   | "favorite_color";
+
+type EffectAnimal =
+  | "gorilla"
+  | "redPanda"
+  | "humanBaby"
+  | "cat"
+  | "alpaca";
 
 type MissionQuiz = {
   targetUserId: string;
@@ -49,6 +72,33 @@ type MissionPageClientProps = {
 };
 
 const TOTAL_STAMP_COUNT = 10;
+const EFFECT_DURATION_MS = 2500;
+
+/*
+ * 5種類の動物を同じ確率で選ぶための配列
+ */
+const EFFECT_ANIMALS: EffectAnimal[] = [
+  "gorilla",
+  "redPanda",
+  "humanBaby",
+  "cat",
+  "alpaca",
+];
+
+/*
+ * EFFECT_ANIMALSの中から
+ * 1種類を等確率で選択する
+ */
+function getRandomEffectAnimal(): EffectAnimal {
+  const randomIndex = Math.floor(
+    Math.random() *
+      EFFECT_ANIMALS.length,
+  );
+
+  return EFFECT_ANIMALS[
+    randomIndex
+  ];
+}
 
 export default function MissionPageClient({
   initialQuiz,
@@ -57,23 +107,33 @@ export default function MissionPageClient({
   initialStampCount,
   rewardQuestionText,
 }: MissionPageClientProps) {
-  const [formattedDate, setFormattedDate] =
-    useState("");
+  const [
+    formattedDate,
+    setFormattedDate,
+  ] = useState("");
 
   const [
     selectedAnswer,
     setSelectedAnswer,
   ] = useState<string | null>(
-    initialAttempt?.selectedAnswer ?? null,
+    initialAttempt?.selectedAnswer ??
+      null,
   );
 
-  const [isAnswered, setIsAnswered] =
-    useState(initialAttempt !== null);
+  const [
+    isAnswered,
+    setIsAnswered,
+  ] = useState(
+    initialAttempt !== null,
+  );
 
-  const [isCorrect, setIsCorrect] =
-    useState<boolean | null>(
-      initialAttempt?.isCorrect ?? null,
-    );
+  const [
+    isCorrect,
+    setIsCorrect,
+  ] = useState<boolean | null>(
+    initialAttempt?.isCorrect ??
+      null,
+  );
 
   const [
     correctAnswer,
@@ -82,16 +142,32 @@ export default function MissionPageClient({
     initialCorrectAnswer,
   );
 
-  const [stampCount, setStampCount] =
-    useState(initialStampCount);
-
-  const [submitError, setSubmitError] =
-    useState("");
+  const [
+    stampCount,
+    setStampCount,
+  ] = useState(initialStampCount);
 
   const [
-    showCelebration,
-    setShowCelebration,
+    submitError,
+    setSubmitError,
+  ] = useState("");
+
+  const [
+    showCorrectEffect,
+    setShowCorrectEffect,
   ] = useState(false);
+
+  const [
+    showIncorrectEffect,
+    setShowIncorrectEffect,
+  ] = useState(false);
+
+  const [
+    selectedEffectAnimal,
+    setSelectedEffectAnimal,
+  ] = useState<EffectAnimal | null>(
+    null,
+  );
 
   const [
     showStampComplete,
@@ -101,12 +177,16 @@ export default function MissionPageClient({
   const [
     petitReward,
     setPetitReward,
-  ] = useState<PetitReward | null>(null);
+  ] = useState<PetitReward | null>(
+    null,
+  );
 
   const [
     rewardError,
     setRewardError,
-  ] = useState<string | null>(null);
+  ] = useState<string | null>(
+    null,
+  );
 
   const [
     isSubmitting,
@@ -138,7 +218,10 @@ export default function MissionPageClient({
   const handleSelectAnswer = (
     answer: string,
   ) => {
-    if (isAnswered || isSubmitting) {
+    if (
+      isAnswered ||
+      isSubmitting
+    ) {
       return;
     }
 
@@ -157,70 +240,98 @@ export default function MissionPageClient({
 
     setSubmitError("");
 
-    startSubmitTransition(async () => {
-      const previousStampCount =
-        stampCount;
+    startSubmitTransition(
+      async () => {
+        const previousStampCount =
+          stampCount;
 
-      const result =
-        await submitMissionAnswer(
-          initialQuiz.targetUserId,
-          initialQuiz.questionType,
-          selectedAnswer,
+        const result =
+          await submitMissionAnswer(
+            initialQuiz.targetUserId,
+            initialQuiz.questionType,
+            selectedAnswer,
+          );
+
+        if (
+          result.error ||
+          !result.data
+        ) {
+          setSubmitError(
+            result.error ??
+              "回答を保存できませんでした。",
+          );
+
+          return;
+        }
+
+        const answerData =
+          result.data;
+
+        /*
+         * 回答ごとに5種類の中から
+         * 1種類を等確率で選ぶ
+         */
+        const randomAnimal =
+          getRandomEffectAnimal();
+
+        setSelectedEffectAnimal(
+          randomAnimal,
         );
 
-      if (
-        result.error ||
-        !result.data
-      ) {
-        setSubmitError(
-          result.error ??
-            "回答を保存できませんでした。",
+        setIsAnswered(true);
+
+        setIsCorrect(
+          answerData.isCorrect,
         );
 
-        return;
-      }
+        setCorrectAnswer(
+          answerData.correctAnswer,
+        );
 
-      const answerData = result.data;
+        setStampCount(
+          answerData.stampCount,
+        );
 
-      setIsAnswered(true);
+        setPetitReward(
+          answerData.petitReward,
+        );
 
-      setIsCorrect(
-        answerData.isCorrect,
-      );
+        setRewardError(
+          answerData.rewardError,
+        );
 
-      setCorrectAnswer(
-        answerData.correctAnswer,
-      );
+        if (
+          answerData.isCorrect
+        ) {
+          setShowCorrectEffect(true);
 
-      setStampCount(
-        answerData.stampCount,
-      );
+          window.setTimeout(() => {
+            setShowCorrectEffect(false);
 
-      setPetitReward(
-        answerData.petitReward,
-      );
+            if (
+              previousStampCount <
+                TOTAL_STAMP_COUNT &&
+              answerData.stampCount ===
+                TOTAL_STAMP_COUNT
+            ) {
+              setShowStampComplete(
+                true,
+              );
+            }
+          }, EFFECT_DURATION_MS);
+        } else {
+          setShowIncorrectEffect(
+            true,
+          );
 
-      setRewardError(
-        answerData.rewardError,
-      );
-
-      if (answerData.isCorrect) {
-        setShowCelebration(true);
-
-        window.setTimeout(() => {
-          setShowCelebration(false);
-
-          if (
-            previousStampCount <
-              TOTAL_STAMP_COUNT &&
-            answerData.stampCount ===
-              TOTAL_STAMP_COUNT
-          ) {
-            setShowStampComplete(true);
-          }
-        }, 2500);
-      }
-    });
+          window.setTimeout(() => {
+            setShowIncorrectEffect(
+              false,
+            );
+          }, EFFECT_DURATION_MS);
+        }
+      },
+    );
   };
 
   const handleCloseStampComplete =
@@ -245,12 +356,15 @@ export default function MissionPageClient({
     }
 
     if (isAnswered) {
-      if (option === correctAnswer) {
+      if (
+        option === correctAnswer
+      ) {
         classNames.push(
           styles.correctOption,
         );
       } else if (
-        option === selectedAnswer &&
+        option ===
+          selectedAnswer &&
         isCorrect === false
       ) {
         classNames.push(
@@ -268,59 +382,65 @@ export default function MissionPageClient({
 
   return (
     <>
-      {showCelebration && (
-        <div
-          className={
-            styles.celebrationOverlay
-          }
-          role="status"
-          aria-live="polite"
-        >
-          <div
-            className={
-              styles.confettiLayer
-            }
-            aria-hidden="true"
-          >
-            <span>🎉</span>
-            <span>✨</span>
-            <span>🎊</span>
-            <span>⭐</span>
-            <span>👏</span>
-            <span>✨</span>
-            <span>🎉</span>
-            <span>🎊</span>
-          </div>
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "gorilla" && (
+          <GorillaCorrectEffect />
+        )}
 
-          <div
-            className={
-              styles.celebrationContent
-            }
-          >
-            <div
-              className={
-                styles.bigEmoji
-              }
-            >
-              🎉 👏 🎉
-            </div>
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "redPanda" && (
+          <RedPandaCorrectEffect />
+        )}
 
-            <h1>正解！</h1>
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "humanBaby" && (
+          <HumanBabyCorrectEffect />
+        )}
 
-            <p>
-              スタンプを1個獲得しました！
-            </p>
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "cat" && (
+          <CatCorrectEffect />
+        )}
 
-            <div
-              className={
-                styles.sparkles
-              }
-            >
-              ✨ Congratulations! ✨
-            </div>
-          </div>
-        </div>
-      )}
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "alpaca" && (
+          <AlpacaCorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "gorilla" && (
+          <GorillaIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "redPanda" && (
+          <RedPandaIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "humanBaby" && (
+          <HumanBabyIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "cat" && (
+          <CatIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "alpaca" && (
+          <AlpacaIncorrectEffect />
+        )}
 
       {showStampComplete && (
         <div
@@ -399,7 +519,9 @@ export default function MissionPageClient({
                     styles.petitRewardMember
                   }
                 >
-                  {petitReward.sourceNickname}
+                  {
+                    petitReward.sourceNickname
+                  }
                   さんの回答
                 </p>
 
@@ -408,7 +530,9 @@ export default function MissionPageClient({
                     styles.petitRewardQuestion
                   }
                 >
-                  {petitReward.questionText}
+                  {
+                    petitReward.questionText
+                  }
                 </p>
 
                 <strong
@@ -416,7 +540,11 @@ export default function MissionPageClient({
                     styles.petitRewardAnswer
                   }
                 >
-                  「{petitReward.answerText}」
+                  「
+                  {
+                    petitReward.answerText
+                  }
+                  」
                 </strong>
               </div>
             ) : rewardError ? (
@@ -464,7 +592,9 @@ export default function MissionPageClient({
         className={styles.quizCard}
       >
         <div
-          className={styles.quizHeader}
+          className={
+            styles.quizHeader
+          }
         >
           <div>
             <p
@@ -510,7 +640,9 @@ export default function MissionPageClient({
               />
             ) : (
               <span>
-                {initialQuiz.targetIcon}
+                {
+                  initialQuiz.targetIcon
+                }
               </span>
             )}
           </div>
@@ -521,11 +653,15 @@ export default function MissionPageClient({
             }
           >
             <p>
-              {initialQuiz.targetRealName}
+              {
+                initialQuiz.targetRealName
+              }
             </p>
 
             <h3>
-              {initialQuiz.targetNickname}
+              {
+                initialQuiz.targetNickname
+              }
             </h3>
           </div>
         </div>
@@ -557,7 +693,9 @@ export default function MissionPageClient({
             </span>
 
             <h3>
-              {initialQuiz.question}
+              {
+                initialQuiz.question
+              }
             </h3>
           </div>
 
@@ -567,7 +705,10 @@ export default function MissionPageClient({
             }
           >
             {initialQuiz.options.map(
-              (option, index) => (
+              (
+                option,
+                index,
+              ) => (
                 <button
                   key={`${option}-${index}`}
                   type="button"
@@ -618,7 +759,7 @@ export default function MissionPageClient({
                     styles.celebration
                   }
                 >
-                  👏 🎉
+              
                 </div>
 
                 <strong>
@@ -651,7 +792,9 @@ export default function MissionPageClient({
                 <p>
                   正解は
                   <span>
-                    「{correctAnswer}」
+                    「
+                    {correctAnswer}
+                    」
                   </span>
                   です。
                 </p>
@@ -727,7 +870,8 @@ export default function MissionPageClient({
                 styles.stampMonth
               }
             >
-              {currentMonth}月のスタンプカード
+              {currentMonth}
+              月のスタンプカード
             </p>
           </div>
         </div>
@@ -757,7 +901,9 @@ export default function MissionPageClient({
             </p>
 
             <strong>
-              「{rewardQuestionText}」
+              「
+              {rewardQuestionText}
+              」
             </strong>
           </div>
         </div>

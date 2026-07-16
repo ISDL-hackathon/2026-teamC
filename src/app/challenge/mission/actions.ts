@@ -87,8 +87,8 @@ type MonthlyPetitQuestionRow = {
 };
 
 /**
- * 日本時間の今日をYYYY-MM-DDで取得する
- */
+* 日本時間の今日をYYYY-MM-DDで取得する
+*/
 function getJapanDateKey() {
   return new Intl.DateTimeFormat(
     "en-CA",
@@ -102,9 +102,9 @@ function getJapanDateKey() {
 }
 
 /**
- * 日本時間の今月の開始日と
- * 翌月開始日を取得する
- */
+* 日本時間の今月の開始日と
+* 翌月開始日を取得する
+*/
 function getJapanMonthRange() {
   const parts =
     new Intl.DateTimeFormat(
@@ -163,8 +163,8 @@ function getJapanMonthRange() {
 }
 
 /**
- * 文字列から固定の数値を作る
- */
+* 文字列から固定の数値を作る
+*/
 function createSeed(
   value: string,
 ) {
@@ -187,9 +187,9 @@ function createSeed(
 }
 
 /**
- * 日付とユーザーが同じなら
- * 同じ並びになるようにシャッフルする
- */
+* 日付とユーザーが同じなら
+* 同じ並びになるようにシャッフルする
+*/
 function shuffleWithSeed<T>(
   values: T[],
   seedText: string,
@@ -288,8 +288,8 @@ function getProfileIcon(
 }
 
 /**
- * 今月のプチ質問の文字列を取得する
- */
+* 今月のプチ質問の文字列を取得する
+*/
 function getMonthlyPetitQuestionText(
   question:
     | {
@@ -314,8 +314,8 @@ function getMonthlyPetitQuestionText(
 }
 
 /**
- * クイズの選択肢を4つ作る
- */
+* クイズの選択肢を4つ作る
+*/
 function createQuizOptions(
   missionProfiles:
     MissionProfileRow[],
@@ -385,8 +385,8 @@ function createQuizOptions(
 }
 
 /**
- * 今月の正解数を取得する
- */
+* 今月の正解数を取得する
+*/
 async function getMonthlyStampCount(
   userId: string,
 ) {
@@ -438,8 +438,8 @@ async function getMonthlyStampCount(
 }
 
 /**
- * ミッション画面の初期データを取得する
- */
+* ミッション画面の初期データを取得する
+*/
 export async function getMissionPageData():
   Promise<MissionPageDataResult> {
   const supabase =
@@ -791,8 +791,8 @@ export async function getMissionPageData():
 }
 
 /**
- * クイズの回答を保存する
- */
+* クイズの回答を保存する
+*/
 export async function submitMissionAnswer(
   targetUserId: string,
   questionType: QuestionType,
