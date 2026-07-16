@@ -137,13 +137,6 @@ export default function HomePageClient({
 
           <h2>今日のチャレンジ</h2>
         </div>
-
-        <Link
-          href="/challenge"
-          className="linkButton"
-        >
-          もっと見る
-        </Link>
       </section>
 
       <section className="challengeCard">
@@ -185,13 +178,6 @@ export default function HomePageClient({
 
           <h2>おさいふ</h2>
         </div>
-
-        <Link
-          href="/challenge/point"
-          className="linkButton"
-        >
-          明細を見る
-        </Link>
       </section>
 
       <section className="pointCard">
