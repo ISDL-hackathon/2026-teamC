@@ -27,11 +27,25 @@ type MissionAttempt = {
   isCorrect: boolean;
 };
 
+type PetitReward = {
+  rewardId: number;
+  sourceAnswerId: number;
+  sourceUserId: string;
+  sourceNickname: string;
+  sourceRealName: string;
+  sourceSelectedIcon: string | null;
+  sourceAvatarUrl: string | null;
+  questionText: string;
+  answerText: string;
+  receivedAt: string;
+};
+
 type MissionPageClientProps = {
   initialQuiz: MissionQuiz;
   initialAttempt: MissionAttempt | null;
   initialCorrectAnswer: string | null;
   initialStampCount: number;
+  rewardQuestionText: string;
 };
 
 const TOTAL_STAMP_COUNT = 10;
@@ -41,6 +55,7 @@ export default function MissionPageClient({
   initialAttempt,
   initialCorrectAnswer,
   initialStampCount,
+  rewardQuestionText,
 }: MissionPageClientProps) {
   const [formattedDate, setFormattedDate] =
     useState("");
@@ -82,6 +97,16 @@ export default function MissionPageClient({
     showStampComplete,
     setShowStampComplete,
   ] = useState(false);
+
+  const [
+    petitReward,
+    setPetitReward,
+  ] = useState<PetitReward | null>(null);
+
+  const [
+    rewardError,
+    setRewardError,
+  ] = useState<string | null>(null);
 
   const [
     isSubmitting,
@@ -171,6 +196,14 @@ export default function MissionPageClient({
         answerData.stampCount,
       );
 
+      setPetitReward(
+        answerData.petitReward,
+      );
+
+      setRewardError(
+        answerData.rewardError,
+      );
+
       if (answerData.isCorrect) {
         setShowCelebration(true);
 
@@ -184,15 +217,16 @@ export default function MissionPageClient({
               TOTAL_STAMP_COUNT
           ) {
             setShowStampComplete(true);
-
-            window.setTimeout(() => {
-              setShowStampComplete(false);
-            }, 3500);
           }
         }, 2500);
       }
     });
   };
+
+  const handleCloseStampComplete =
+    () => {
+      setShowStampComplete(false);
+    };
 
   const getOptionClassName = (
     option: string,
@@ -293,8 +327,9 @@ export default function MissionPageClient({
           className={
             styles.completeOverlay
           }
-          role="status"
-          aria-live="polite"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reward-title"
         >
           <div
             className={
@@ -335,7 +370,9 @@ export default function MissionPageClient({
               🏆
             </div>
 
-            <h1>10個達成！</h1>
+            <h1 id="reward-title">
+              10個達成！
+            </h1>
 
             <p>
               ミッションスタンプを
@@ -343,14 +380,82 @@ export default function MissionPageClient({
               すべて集めました！
             </p>
 
-            <div
+            {petitReward ? (
+              <div
+                className={
+                  styles.petitRewardCard
+                }
+              >
+                <p
+                  className={
+                    styles.petitRewardLabel
+                  }
+                >
+                  🎁 プチ情報を獲得！
+                </p>
+
+                <p
+                  className={
+                    styles.petitRewardMember
+                  }
+                >
+                  {petitReward.sourceNickname}
+                  さんの回答
+                </p>
+
+                <p
+                  className={
+                    styles.petitRewardQuestion
+                  }
+                >
+                  {petitReward.questionText}
+                </p>
+
+                <strong
+                  className={
+                    styles.petitRewardAnswer
+                  }
+                >
+                  「{petitReward.answerText}」
+                </strong>
+              </div>
+            ) : rewardError ? (
+              <div
+                className={
+                  styles.petitRewardError
+                }
+              >
+                <p>
+                  プチ情報を取得できませんでした。
+                </p>
+
+                <small>
+                  {rewardError}
+                </small>
+              </div>
+            ) : (
+              <div
+                className={
+                  styles.petitRewardError
+                }
+              >
+                <p>
+                  回答済みのメンバーがまだいません。
+                </p>
+              </div>
+            )}
+
+            <button
+              type="button"
               className={
-                styles.completeMessage
+                styles.completeCloseButton
+              }
+              onClick={
+                handleCloseStampComplete
               }
             >
-              🎉 コンプリートおめでとう！
-              🎉
-            </div>
+              閉じる
+            </button>
           </div>
         </div>
       )}
@@ -624,6 +729,36 @@ export default function MissionPageClient({
             >
               {currentMonth}月のスタンプカード
             </p>
+          </div>
+        </div>
+
+        <div
+          className={
+            styles.rewardPreview
+          }
+        >
+          <div
+            className={
+              styles.rewardPreviewIcon
+            }
+            aria-hidden="true"
+          >
+            🎁
+          </div>
+
+          <div
+            className={
+              styles.rewardPreviewText
+            }
+          >
+            <p>
+              10個達成でもらえる
+              プチ情報
+            </p>
+
+            <strong>
+              「{rewardQuestionText}」
+            </strong>
           </div>
         </div>
 
