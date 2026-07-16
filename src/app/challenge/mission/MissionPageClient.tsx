@@ -8,11 +8,17 @@ import {
 import { submitMissionAnswer } from "./actions";
 import GorillaCorrectEffect from "./effect/gorilla/GorillaCorrectEffect";
 import GorillaIncorrectEffect from "./effect/gorilla/GorillaIncorrectEffect";
+import RedPandaCorrectEffect from "./effect/red_panda/RedPandaCorrectEffect";
+import RedPandaIncorrectEffect from "./effect/red_panda/RedPandaIncorrectEffect";
 import styles from "./page.module.css";
 
 type QuestionType =
   | "favorite_subject"
   | "favorite_color";
+
+type EffectAnimal =
+  | "gorilla"
+  | "redPanda";
 
 type MissionQuiz = {
   targetUserId: string;
@@ -51,6 +57,7 @@ type MissionPageClientProps = {
 };
 
 const TOTAL_STAMP_COUNT = 10;
+const EFFECT_DURATION_MS = 2500;
 
 export default function MissionPageClient({
   initialQuiz,
@@ -59,23 +66,32 @@ export default function MissionPageClient({
   initialStampCount,
   rewardQuestionText,
 }: MissionPageClientProps) {
-  const [formattedDate, setFormattedDate] =
-    useState("");
+  const [
+    formattedDate,
+    setFormattedDate,
+  ] = useState("");
 
   const [
     selectedAnswer,
     setSelectedAnswer,
   ] = useState<string | null>(
-    initialAttempt?.selectedAnswer ?? null,
+    initialAttempt?.selectedAnswer ??
+      null,
   );
 
-  const [isAnswered, setIsAnswered] =
-    useState(initialAttempt !== null);
+  const [
+    isAnswered,
+    setIsAnswered,
+  ] = useState(
+    initialAttempt !== null,
+  );
 
-  const [isCorrect, setIsCorrect] =
-    useState<boolean | null>(
-      initialAttempt?.isCorrect ?? null,
-    );
+  const [
+    isCorrect,
+    setIsCorrect,
+  ] = useState<boolean | null>(
+    initialAttempt?.isCorrect ?? null,
+  );
 
   const [
     correctAnswer,
@@ -84,21 +100,32 @@ export default function MissionPageClient({
     initialCorrectAnswer,
   );
 
-  const [stampCount, setStampCount] =
-    useState(initialStampCount);
+  const [
+    stampCount,
+    setStampCount,
+  ] = useState(initialStampCount);
 
-  const [submitError, setSubmitError] =
-    useState("");
+  const [
+    submitError,
+    setSubmitError,
+  ] = useState("");
 
   const [
     showCelebration,
     setShowCelebration,
   ] = useState(false);
 
-const [
-  showIncorrectEffect,
-  setShowIncorrectEffect,
-] = useState(false);
+  const [
+    showIncorrectEffect,
+    setShowIncorrectEffect,
+  ] = useState(false);
+
+  const [
+    selectedEffectAnimal,
+    setSelectedEffectAnimal,
+  ] = useState<EffectAnimal | null>(
+    null,
+  );
 
   const [
     showStampComplete,
@@ -108,12 +135,16 @@ const [
   const [
     petitReward,
     setPetitReward,
-  ] = useState<PetitReward | null>(null);
+  ] = useState<PetitReward | null>(
+    null,
+  );
 
   const [
     rewardError,
     setRewardError,
-  ] = useState<string | null>(null);
+  ] = useState<string | null>(
+    null,
+  );
 
   const [
     isSubmitting,
@@ -145,7 +176,10 @@ const [
   const handleSelectAnswer = (
     answer: string,
   ) => {
-    if (isAnswered || isSubmitting) {
+    if (
+      isAnswered ||
+      isSubmitting
+    ) {
       return;
     }
 
@@ -164,76 +198,103 @@ const [
 
     setSubmitError("");
 
-    startSubmitTransition(async () => {
-      const previousStampCount =
-        stampCount;
+    startSubmitTransition(
+      async () => {
+        const previousStampCount =
+          stampCount;
 
-      const result =
-        await submitMissionAnswer(
-          initialQuiz.targetUserId,
-          initialQuiz.questionType,
-          selectedAnswer,
+        const result =
+          await submitMissionAnswer(
+            initialQuiz.targetUserId,
+            initialQuiz.questionType,
+            selectedAnswer,
+          );
+
+        if (
+          result.error ||
+          !result.data
+        ) {
+          setSubmitError(
+            result.error ??
+              "回答を保存できませんでした。",
+          );
+
+          return;
+        }
+
+        const answerData =
+          result.data;
+
+        /*
+         * 回答ごとに動物を1体選ぶ
+         *
+         * 50％：ゴリラ
+         * 50％：レッサーパンダ
+         */
+        const randomAnimal:
+          EffectAnimal =
+          Math.random() < 0.5
+            ? "gorilla"
+            : "redPanda";
+
+        setSelectedEffectAnimal(
+          randomAnimal,
         );
 
-      if (
-        result.error ||
-        !result.data
-      ) {
-        setSubmitError(
-          result.error ??
-            "回答を保存できませんでした。",
+        setIsAnswered(true);
+
+        setIsCorrect(
+          answerData.isCorrect,
         );
 
-        return;
-      }
+        setCorrectAnswer(
+          answerData.correctAnswer,
+        );
 
-      const answerData = result.data;
+        setStampCount(
+          answerData.stampCount,
+        );
 
-      setIsAnswered(true);
+        setPetitReward(
+          answerData.petitReward,
+        );
 
-      setIsCorrect(
-        answerData.isCorrect,
-      );
+        setRewardError(
+          answerData.rewardError,
+        );
 
-      setCorrectAnswer(
-        answerData.correctAnswer,
-      );
+        if (
+          answerData.isCorrect
+        ) {
+          setShowCelebration(true);
 
-      setStampCount(
-        answerData.stampCount,
-      );
+          window.setTimeout(() => {
+            setShowCelebration(false);
 
-      setPetitReward(
-        answerData.petitReward,
-      );
+            if (
+              previousStampCount <
+                TOTAL_STAMP_COUNT &&
+              answerData.stampCount ===
+                TOTAL_STAMP_COUNT
+            ) {
+              setShowStampComplete(
+                true,
+              );
+            }
+          }, EFFECT_DURATION_MS);
+        } else {
+          setShowIncorrectEffect(
+            true,
+          );
 
-      setRewardError(
-        answerData.rewardError,
-      );
-
-      if (answerData.isCorrect) {
-        setShowCelebration(true);
-
-        window.setTimeout(() => {
-          setShowCelebration(false);
-
-          if (
-            previousStampCount <
-              TOTAL_STAMP_COUNT &&
-            answerData.stampCount ===
-              TOTAL_STAMP_COUNT
-          ) {
-            setShowStampComplete(true);
-          }
-        }, 2500);
-} else {
-  setShowIncorrectEffect(true);
-
-  window.setTimeout(() => {
-    setShowIncorrectEffect(false);
-  }, 2500);
-}
-    });
+          window.setTimeout(() => {
+            setShowIncorrectEffect(
+              false,
+            );
+          }, EFFECT_DURATION_MS);
+        }
+      },
+    );
   };
 
   const handleCloseStampComplete =
@@ -258,12 +319,15 @@ const [
     }
 
     if (isAnswered) {
-      if (option === correctAnswer) {
+      if (
+        option === correctAnswer
+      ) {
         classNames.push(
           styles.correctOption,
         );
       } else if (
-        option === selectedAnswer &&
+        option ===
+          selectedAnswer &&
         isCorrect === false
       ) {
         classNames.push(
@@ -279,21 +343,37 @@ const [
     return classNames.join(" ");
   };
 
-return (
-  <>
-    {showCelebration && (
-      <GorillaCorrectEffect />
-    )}
+  return (
+    <>
+      {showCelebration &&
+        selectedEffectAnimal ===
+          "gorilla" && (
+          <GorillaCorrectEffect />
+        )}
 
-    {showIncorrectEffect && (
-      <GorillaIncorrectEffect />
-    )}
+      {showCelebration &&
+        selectedEffectAnimal ===
+          "redPanda" && (
+          <RedPandaCorrectEffect />
+        )}
 
-    {showStampComplete && (
-      <div
-        className={
-          styles.completeOverlay
-        }
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "gorilla" && (
+          <GorillaIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "redPanda" && (
+          <RedPandaIncorrectEffect />
+        )}
+
+      {showStampComplete && (
+        <div
+          className={
+            styles.completeOverlay
+          }
           role="dialog"
           aria-modal="true"
           aria-labelledby="reward-title"
@@ -366,7 +446,9 @@ return (
                     styles.petitRewardMember
                   }
                 >
-                  {petitReward.sourceNickname}
+                  {
+                    petitReward.sourceNickname
+                  }
                   さんの回答
                 </p>
 
@@ -375,7 +457,9 @@ return (
                     styles.petitRewardQuestion
                   }
                 >
-                  {petitReward.questionText}
+                  {
+                    petitReward.questionText
+                  }
                 </p>
 
                 <strong
@@ -383,7 +467,11 @@ return (
                     styles.petitRewardAnswer
                   }
                 >
-                  「{petitReward.answerText}」
+                  「
+                  {
+                    petitReward.answerText
+                  }
+                  」
                 </strong>
               </div>
             ) : rewardError ? (
@@ -428,14 +516,20 @@ return (
       )}
 
       <section
-        className={styles.quizCard}
+        className={
+          styles.quizCard
+        }
       >
         <div
-          className={styles.quizHeader}
+          className={
+            styles.quizHeader
+          }
         >
           <div>
             <p
-              className={styles.label}
+              className={
+                styles.label
+              }
             >
               TODAY&apos;S QUIZ
             </p>
@@ -477,7 +571,9 @@ return (
               />
             ) : (
               <span>
-                {initialQuiz.targetIcon}
+                {
+                  initialQuiz.targetIcon
+                }
               </span>
             )}
           </div>
@@ -488,11 +584,15 @@ return (
             }
           >
             <p>
-              {initialQuiz.targetRealName}
+              {
+                initialQuiz.targetRealName
+              }
             </p>
 
             <h3>
-              {initialQuiz.targetNickname}
+              {
+                initialQuiz.targetNickname
+              }
             </h3>
           </div>
         </div>
@@ -524,7 +624,9 @@ return (
             </span>
 
             <h3>
-              {initialQuiz.question}
+              {
+                initialQuiz.question
+              }
             </h3>
           </div>
 
@@ -534,7 +636,10 @@ return (
             }
           >
             {initialQuiz.options.map(
-              (option, index) => (
+              (
+                option,
+                index,
+              ) => (
                 <button
                   key={`${option}-${index}`}
                   type="button"
@@ -618,7 +723,9 @@ return (
                 <p>
                   正解は
                   <span>
-                    「{correctAnswer}」
+                    「
+                    {correctAnswer}
+                    」
                   </span>
                   です。
                 </p>
@@ -667,7 +774,9 @@ return (
       </section>
 
       <section
-        className={styles.stampCard}
+        className={
+          styles.stampCard
+        }
       >
         <div
           className={
@@ -676,7 +785,9 @@ return (
         >
           <div>
             <p
-              className={styles.label}
+              className={
+                styles.label
+              }
             >
               MISSION STAMP
             </p>
@@ -694,7 +805,8 @@ return (
                 styles.stampMonth
               }
             >
-              {currentMonth}月のスタンプカード
+              {currentMonth}
+              月のスタンプカード
             </p>
           </div>
         </div>
@@ -724,7 +836,9 @@ return (
             </p>
 
             <strong>
-              「{rewardQuestionText}」
+              「
+              {rewardQuestionText}
+              」
             </strong>
           </div>
         </div>
@@ -746,7 +860,10 @@ return (
             </strong>
 
             <span>
-              / {TOTAL_STAMP_COUNT}
+              /{" "}
+              {
+                TOTAL_STAMP_COUNT
+              }
             </span>
           </div>
         </div>
@@ -798,13 +915,17 @@ return (
 
               return (
                 <div
-                  key={stampNumber}
+                  key={
+                    stampNumber
+                  }
                   className={
                     stampClassName
                   }
                 >
                   <span>
-                    {stampNumber}
+                    {
+                      stampNumber
+                    }
                   </span>
 
                   {isReward && (
