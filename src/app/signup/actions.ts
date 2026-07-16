@@ -6,17 +6,26 @@ import { createClient } from "@/lib/supabase/server";
 export async function signup(
   formData: FormData,
 ) {
-  const email = formData.get("email");
+  const realName =
+    formData.get("realName");
+
+  const email =
+    formData.get("email");
+
   const password =
     formData.get("password");
+
   const passwordConfirm =
     formData.get("passwordConfirm");
+
   const favoriteSubject =
     formData.get("favoriteSubject");
+
   const favoriteColor =
     formData.get("favoriteColor");
 
   if (
+    typeof realName !== "string" ||
     typeof email !== "string" ||
     typeof password !== "string" ||
     typeof passwordConfirm !== "string" ||
@@ -28,11 +37,23 @@ export async function signup(
     );
   }
 
-  const trimmedEmail = email.trim();
+  const trimmedRealName =
+    realName.trim();
+
+  const trimmedEmail =
+    email.trim();
+
   const trimmedFavoriteSubject =
     favoriteSubject.trim();
+
   const trimmedFavoriteColor =
     favoriteColor.trim();
+
+  if (!trimmedRealName) {
+    redirect(
+      "/signup?error=real_name_required",
+    );
+  }
 
   if (!trimmedEmail) {
     redirect(
@@ -46,7 +67,10 @@ export async function signup(
     );
   }
 
-  if (password !== passwordConfirm) {
+  if (
+    password !==
+    passwordConfirm
+  ) {
     redirect(
       "/signup?error=password_mismatch",
     );
@@ -73,6 +97,12 @@ export async function signup(
     );
   }
 
+  if (trimmedRealName.length > 50) {
+    redirect(
+      "/signup?error=invalid_input",
+    );
+  }
+
   const supabase =
     await createClient();
 
@@ -82,6 +112,8 @@ export async function signup(
       password,
       options: {
         data: {
+          real_name:
+            trimmedRealName,
           favorite_subject:
             trimmedFavoriteSubject,
           favorite_color:

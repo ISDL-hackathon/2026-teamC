@@ -14,6 +14,7 @@ type QuestionType =
 
 type MissionQuiz = {
   targetUserId: string;
+  targetRealName: string;
   targetNickname: string;
   targetIcon: string;
   questionType: QuestionType;
@@ -142,49 +143,54 @@ export default function MissionPageClient({
           selectedAnswer,
         );
 
-    
-        if (result.error || !result.data) {
-  setSubmitError(
-    result.error ??
-      "回答を保存できませんでした。",
-  );
+      if (
+        result.error ||
+        !result.data
+      ) {
+        setSubmitError(
+          result.error ??
+            "回答を保存できませんでした。",
+        );
 
-  return;
-}
+        return;
+      }
 
-const answerData = result.data;
+      const answerData = result.data;
 
-setIsAnswered(true);
-setIsCorrect(
-  answerData.isCorrect,
-);
-setCorrectAnswer(
-  answerData.correctAnswer,
-);
-setStampCount(
-  answerData.stampCount,
-);
+      setIsAnswered(true);
 
-if (answerData.isCorrect) {
-  setShowCelebration(true);
+      setIsCorrect(
+        answerData.isCorrect,
+      );
 
-  window.setTimeout(() => {
-    setShowCelebration(false);
+      setCorrectAnswer(
+        answerData.correctAnswer,
+      );
 
-    if (
-      previousStampCount <
-        TOTAL_STAMP_COUNT &&
-      answerData.stampCount ===
-        TOTAL_STAMP_COUNT
-    ) {
-      setShowStampComplete(true);
+      setStampCount(
+        answerData.stampCount,
+      );
 
-      window.setTimeout(() => {
-        setShowStampComplete(false);
-      }, 3500);
-    }
-  }, 2500);
-}
+      if (answerData.isCorrect) {
+        setShowCelebration(true);
+
+        window.setTimeout(() => {
+          setShowCelebration(false);
+
+          if (
+            previousStampCount <
+              TOTAL_STAMP_COUNT &&
+            answerData.stampCount ===
+              TOTAL_STAMP_COUNT
+          ) {
+            setShowStampComplete(true);
+
+            window.setTimeout(() => {
+              setShowStampComplete(false);
+            }, 3500);
+          }
+        }, 2500);
+      }
     });
   };
 
@@ -409,7 +415,9 @@ if (answerData.isCorrect) {
               styles.seniorInfo
             }
           >
-            <p>研究室メンバー</p>
+            <p>
+              {initialQuiz.targetRealName}
+            </p>
 
             <h3>
               {initialQuiz.targetNickname}

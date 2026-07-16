@@ -11,6 +11,8 @@ type SignupPageProps = {
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_input:
     "入力内容を確認してください。",
+  real_name_required:
+    "本名を入力してください。",
   email_required:
     "メールアドレスを入力してください。",
   password_too_short:
@@ -105,6 +107,45 @@ export default async function SignupPage({
 
                   <h3>ログイン情報</h3>
                 </div>
+              </div>
+
+              <div className={styles.field}>
+                <label
+                  htmlFor="realName"
+                  className={styles.label}
+                >
+                  本名
+                </label>
+
+                <div
+                  className={
+                    styles.inputWrapper
+                  }
+                >
+                  <span
+                    className={
+                      styles.inputIcon
+                    }
+                    aria-hidden="true"
+                  >
+                    👤
+                  </span>
+
+                  <input
+                    id="realName"
+                    name="realName"
+                    type="text"
+                    autoComplete="name"
+                    maxLength={50}
+                    placeholder="例：山田 太郎"
+                    className={styles.input}
+                    required
+                  />
+                </div>
+
+                <p className={styles.helpText}>
+                  研究室メンバーの表示に使用されます
+                </p>
               </div>
 
               <div className={styles.field}>

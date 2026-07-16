@@ -10,6 +10,7 @@ type QuestionType =
 
 type MissionQuiz = {
   targetUserId: string;
+  targetRealName: string;
   targetNickname: string;
   targetIcon: string;
   questionType: QuestionType;
@@ -50,6 +51,7 @@ type MissionProfileRow = {
 
 type ProfileRow = {
   id: string;
+  real_name: string | null;
   nickname: string | null;
   selected_icon: string | null;
   avatar_url: string | null;
@@ -459,6 +461,7 @@ Promise<MissionPageDataResult> {
     .from("profiles")
     .select(`
       id,
+      real_name,
       nickname,
       selected_icon,
       avatar_url
@@ -480,6 +483,10 @@ Promise<MissionPageDataResult> {
 
   const profile =
     targetUserProfile as ProfileRow | null;
+
+  const targetRealName =
+    profile?.real_name?.trim() ||
+    "名前未設定";
 
   const targetNickname =
     profile?.nickname?.trim() ||
@@ -519,6 +526,7 @@ Promise<MissionPageDataResult> {
       quiz: {
         targetUserId:
           targetProfile.user_id,
+        targetRealName,
         targetNickname,
         targetIcon:
           getProfileIcon(
@@ -681,7 +689,7 @@ export async function submitMissionAnswer(
         is_correct: isCorrect,
       });
 
-    if (insertError) {
+  if (insertError) {
     console.error(
       "クイズ回答保存エラー:",
       insertError,
@@ -743,7 +751,7 @@ export async function submitMissionAnswer(
     };
   }
 
-    return {
+  return {
     data: {
       isCorrect,
       correctAnswer,
