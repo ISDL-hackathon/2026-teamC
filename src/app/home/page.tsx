@@ -1,21 +1,16 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireMonthlyAnswer } from "@/lib/petit-question/checkMonthlyAnswer";
 import HomePageClient from "./HomePageClient";
 
 export default async function HomePage() {
+  const user = await requireMonthlyAnswer();
+
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { error: cleanupError } = await supabase.rpc(
-    "close_stale_attendance",
-  );
+  const { error: cleanupError } =
+    await supabase.rpc(
+      "close_stale_attendance",
+    );
 
   if (cleanupError) {
     console.error(
@@ -120,7 +115,9 @@ export default async function HomePage() {
   return (
     <HomePageClient
       labCount={labCount ?? 0}
-      isInLab={Boolean(activeAttendance)}
+      isInLab={Boolean(
+        activeAttendance,
+      )}
       checkInCount={
         monthlyCheckInCount ?? 0
       }
