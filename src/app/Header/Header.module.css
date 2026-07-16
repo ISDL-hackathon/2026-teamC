@@ -1,17 +1,20 @@
-
 .header {
   position: fixed;
   top: 0;
   left: 50%;
   z-index: 100;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: min(390px, 100%);
+
+  width: min(100%, 440px);
   height: 64px;
   padding: 0 22px;
+
   background: #ffffff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+
   transform: translateX(-50%);
 }
 
@@ -47,11 +50,4 @@
   font-weight: 800;
   line-height: 1;
   letter-spacing: 4px;
-}
-
-
-@media (max-width: 390px) {
-  .header {
-    width: 100%;
-  }
 }
