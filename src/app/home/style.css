@@ -14,12 +14,14 @@ button {
 }
 
 .app {
+  position: relative;
   width: 100%;
-  max-width: 456px;
+  max-width: 440px;
   min-height: 100vh;
   margin: 0 auto;
-  background: linear-gradient(180deg, #f7f5f4 0%, #f2eeee 100%);
-  padding-bottom: 96px;
+  padding-top: 64px;
+  padding-bottom: 88px;
+  overflow-x: hidden;
 }
 
 .header {
