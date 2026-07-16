@@ -3,104 +3,95 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+type SignupResult = {
+  error: string | null;
+};
+
+type SignupInput = {
+  realName: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  favoriteSubject: string;
+  favoriteColor: string;
+};
+
 export async function signup(
-  formData: FormData,
-) {
-  const realName =
-    formData.get("realName");
-
-  const email =
-    formData.get("email");
-
-  const password =
-    formData.get("password");
-
-  const passwordConfirm =
-    formData.get("passwordConfirm");
-
-  const favoriteSubject =
-    formData.get("favoriteSubject");
-
-  const favoriteColor =
-    formData.get("favoriteColor");
-
-  if (
-    typeof realName !== "string" ||
-    typeof email !== "string" ||
-    typeof password !== "string" ||
-    typeof passwordConfirm !== "string" ||
-    typeof favoriteSubject !== "string" ||
-    typeof favoriteColor !== "string"
-  ) {
-    redirect(
-      "/signup?error=invalid_input",
-    );
-  }
-
+  input: SignupInput,
+): Promise<SignupResult> {
   const trimmedRealName =
-    realName.trim();
+    input.realName.trim();
 
   const trimmedEmail =
-    email.trim();
+    input.email.trim();
 
   const trimmedFavoriteSubject =
-    favoriteSubject.trim();
+    input.favoriteSubject.trim();
 
   const trimmedFavoriteColor =
-    favoriteColor.trim();
+    input.favoriteColor.trim();
 
   if (!trimmedRealName) {
-    redirect(
-      "/signup?error=real_name_required",
-    );
+    return {
+      error:
+        "本名を入力してください。",
+    };
   }
 
   if (!trimmedEmail) {
-    redirect(
-      "/signup?error=email_required",
-    );
+    return {
+      error:
+        "メールアドレスを入力してください。",
+    };
   }
 
-  if (password.length < 8) {
-    redirect(
-      "/signup?error=password_too_short",
-    );
+  if (input.password.length < 8) {
+    return {
+      error:
+        "パスワードは8文字以上で入力してください。",
+    };
   }
 
   if (
-    password !==
-    passwordConfirm
+    input.password !==
+    input.passwordConfirm
   ) {
-    redirect(
-      "/signup?error=password_mismatch",
-    );
+    return {
+      error:
+        "確認用パスワードが一致していません。",
+    };
   }
 
   if (!trimmedFavoriteSubject) {
-    redirect(
-      "/signup?error=favorite_subject_required",
-    );
+    return {
+      error:
+        "好きな教科を入力してください。",
+    };
   }
 
   if (!trimmedFavoriteColor) {
-    redirect(
-      "/signup?error=favorite_color_required",
-    );
+    return {
+      error:
+        "好きな色を入力してください。",
+    };
   }
 
   if (
-    trimmedFavoriteSubject.length > 20 ||
+    trimmedFavoriteSubject.length >
+      20 ||
     trimmedFavoriteColor.length > 20
   ) {
-    redirect(
-      "/signup?error=quiz_answer_too_long",
-    );
+    return {
+      error:
+        "好きな教科と好きな色は20文字以内で入力してください。",
+    };
   }
 
   if (trimmedRealName.length > 50) {
-    redirect(
-      "/signup?error=invalid_input",
-    );
+    return {
+      error:
+        "本名は50文字以内で入力してください。",
+    };
   }
 
   const supabase =
@@ -109,7 +100,7 @@ export async function signup(
   const { error } =
     await supabase.auth.signUp({
       email: trimmedEmail,
-      password,
+      password: input.password,
       options: {
         data: {
           real_name:
@@ -128,9 +119,23 @@ export async function signup(
       error,
     );
 
-    redirect(
-      "/signup?error=signup_failed",
-    );
+    if (
+      error.message
+        .toLowerCase()
+        .includes(
+          "already registered",
+        )
+    ) {
+      return {
+        error:
+          "このメールアドレスはすでに登録されています。",
+      };
+    }
+
+    return {
+      error:
+        "アカウントを作成できませんでした。入力内容を確認してください。",
+    };
   }
 
   redirect(
