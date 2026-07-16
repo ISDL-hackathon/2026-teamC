@@ -3,29 +3,37 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
 
-export async function login(formData: FormData) {
-  const email = formData.get("email");
-  const password = formData.get("password");
+type LoginResult = {
+  error: string | null;
+};
 
-  if (
-    typeof email !== "string" ||
-    typeof password !== "string"
-  ) {
-    throw new Error(
-      "メールアドレスとパスワードを入力してください"
-    );
+export async function login(
+  email: string,
+  password: string,
+): Promise<LoginResult> {
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail || !password) {
+    return {
+      error:
+        "メールアドレスとパスワードを入力してください。",
+    };
   }
 
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
   const { error } =
     await supabase.auth.signInWithPassword({
-      email,
+      email: trimmedEmail,
       password,
     });
 
   if (error) {
-    redirect("/login?error=login_failed");
+    return {
+      error:
+        "メールアドレスあるいはパスワードが間違っています。",
+    };
   }
 
   redirect("/");
