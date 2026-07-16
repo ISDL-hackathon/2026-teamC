@@ -9,6 +9,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.2",
+    "html5-qrcode": "^2.3.8",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

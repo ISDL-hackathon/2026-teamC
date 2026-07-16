@@ -1,0 +1,179 @@
+.card,
+.nextGoalCard {
+  margin-bottom: 16px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.card {
+  padding: 20px;
+}
+
+.nextGoalCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.label {
+  margin: 0 0 6px;
+  color: #ef3f43;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.mainTitle {
+  margin: 0;
+  color: #222222;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.monthTitle {
+  margin: 12px 0 0;
+  color: #444444;
+  font-size: 15px;
+}
+
+.centerText {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.redText {
+  color: #ef3f43;
+}
+
+.stampGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+
+.stamp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  flex-direction: column;
+  border-radius: 50%;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.stampActive {
+  background: #ef3f43;
+  color: #ffffff;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.22);
+}
+
+.stampInactive {
+  border: 2px dashed #cad8e2;
+  background: #eef5fa;
+  color: #b4c3ce;
+}
+
+.stampSpecial {
+  border: none;
+  background: #d6a61f;
+  color: #ffffff;
+}
+
+.stamp small {
+  margin-top: 1px;
+  font-size: 8px;
+}
+
+.note {
+  margin: 0;
+  color: #999999;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.trophy {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  background: #fff1e6;
+  font-size: 25px;
+  place-items: center;
+}
+
+.grow {
+  min-width: 0;
+  flex: 1;
+}
+
+.goalTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  margin: 10px 0 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eeeeee;
+}
+
+.progressValue {
+  height: 100%;
+  border-radius: 999px;
+  background: #ff6b61;
+}
+
+.progressText {
+  margin: 0;
+  font-size: 12px;
+}
+
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pointBadge {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #ef3f43;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.description {
+  margin: 14px 0 0;
+  color: #888888;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+@media (max-width: 360px) {
+  .stampGrid {
+    gap: 8px;
+  }
+
+  .stamp {
+    font-size: 15px;
+  }
+
+  .mainTitle {
+    font-size: 18px;
+  }
+}
