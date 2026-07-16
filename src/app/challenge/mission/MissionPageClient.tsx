@@ -7,17 +7,14 @@ import {
 } from "react";
 import { submitMissionAnswer } from "./actions";
 
-import CatCorrectEffect from "./effect/cat/CatCorrectEffect";
-import CatIncorrectEffect from "./effect/cat/CatIncorrectEffect";
+import AlpacaCorrectEffect from "./effect/alpaca/AlpacaCorrectEffect";
+import AlpacaIncorrectEffect from "./effect/alpaca/AlpacaIncorrectEffect";
 
 import styles from "./page.module.css";
 
 type QuestionType =
   | "favorite_subject"
   | "favorite_color";
-
-type EffectAnimal =
-  | "cat";
 
 type MissionQuiz = {
   targetUserId: string;
@@ -111,21 +108,14 @@ export default function MissionPageClient({
   ] = useState("");
 
   const [
-    showCelebration,
-    setShowCelebration,
+    showCorrectEffect,
+    setShowCorrectEffect,
   ] = useState(false);
 
   const [
     showIncorrectEffect,
     setShowIncorrectEffect,
   ] = useState(false);
-
-  const [
-    selectedEffectAnimal,
-    setSelectedEffectAnimal,
-  ] = useState<EffectAnimal | null>(
-    null,
-  );
 
   const [
     showStampComplete,
@@ -225,27 +215,24 @@ export default function MissionPageClient({
         const answerData =
           result.data;
 
-        /*
-         * 猫の挙動確認用
-         * 必ずcatを選ぶ
-         */
-        setSelectedEffectAnimal(
-          "cat",
-        );
-
         setIsAnswered(true);
+
         setIsCorrect(
           answerData.isCorrect,
         );
+
         setCorrectAnswer(
           answerData.correctAnswer,
         );
+
         setStampCount(
           answerData.stampCount,
         );
+
         setPetitReward(
           answerData.petitReward,
         );
+
         setRewardError(
           answerData.rewardError,
         );
@@ -253,10 +240,10 @@ export default function MissionPageClient({
         if (
           answerData.isCorrect
         ) {
-          setShowCelebration(true);
+          setShowCorrectEffect(true);
 
           window.setTimeout(() => {
-            setShowCelebration(false);
+            setShowCorrectEffect(false);
 
             if (
               previousStampCount <
@@ -264,7 +251,9 @@ export default function MissionPageClient({
               answerData.stampCount ===
                 TOTAL_STAMP_COUNT
             ) {
-              setShowStampComplete(true);
+              setShowStampComplete(
+                true,
+              );
             }
           }, EFFECT_DURATION_MS);
         } else {
@@ -330,17 +319,13 @@ export default function MissionPageClient({
 
   return (
     <>
-      {showCelebration &&
-        selectedEffectAnimal ===
-          "cat" && (
-          <CatCorrectEffect />
-        )}
+      {showCorrectEffect && (
+        <AlpacaCorrectEffect />
+      )}
 
-      {showIncorrectEffect &&
-        selectedEffectAnimal ===
-          "cat" && (
-          <CatIncorrectEffect />
-        )}
+      {showIncorrectEffect && (
+        <AlpacaIncorrectEffect />
+      )}
 
       {showStampComplete && (
         <div
@@ -489,9 +474,7 @@ export default function MissionPageClient({
       )}
 
       <section
-        className={
-          styles.quizCard
-        }
+        className={styles.quizCard}
       >
         <div
           className={
@@ -500,9 +483,7 @@ export default function MissionPageClient({
         >
           <div>
             <p
-              className={
-                styles.label
-              }
+              className={styles.label}
             >
               TODAY&apos;S QUIZ
             </p>
@@ -747,9 +728,7 @@ export default function MissionPageClient({
       </section>
 
       <section
-        className={
-          styles.stampCard
-        }
+        className={styles.stampCard}
       >
         <div
           className={
@@ -758,9 +737,7 @@ export default function MissionPageClient({
         >
           <div>
             <p
-              className={
-                styles.label
-              }
+              className={styles.label}
             >
               MISSION STAMP
             </p>
@@ -833,10 +810,7 @@ export default function MissionPageClient({
             </strong>
 
             <span>
-              /{" "}
-              {
-                TOTAL_STAMP_COUNT
-              }
+              / {TOTAL_STAMP_COUNT}
             </span>
           </div>
         </div>
@@ -888,17 +862,13 @@ export default function MissionPageClient({
 
               return (
                 <div
-                  key={
-                    stampNumber
-                  }
+                  key={stampNumber}
                   className={
                     stampClassName
                   }
                 >
                   <span>
-                    {
-                      stampNumber
-                    }
+                    {stampNumber}
                   </span>
 
                   {isReward && (
