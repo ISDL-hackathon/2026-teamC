@@ -7,14 +7,8 @@ import {
 } from "react";
 import { submitMissionAnswer } from "./actions";
 
-import GorillaCorrectEffect from "./effect/gorilla/GorillaCorrectEffect";
-import GorillaIncorrectEffect from "./effect/gorilla/GorillaIncorrectEffect";
-
-import RedPandaCorrectEffect from "./effect/red_panda/RedPandaCorrectEffect";
-import RedPandaIncorrectEffect from "./effect/red_panda/RedPandaIncorrectEffect";
-
-import HumanBabyCorrectEffect from "./effect/human_baby/HumanBabyCorrectEffect";
-import HumanBabyIncorrectEffect from "./effect/human_baby/HumanBabyIncorrectEffect";
+import CatCorrectEffect from "./effect/cat/CatCorrectEffect";
+import CatIncorrectEffect from "./effect/cat/CatIncorrectEffect";
 
 import styles from "./page.module.css";
 
@@ -23,9 +17,7 @@ type QuestionType =
   | "favorite_color";
 
 type EffectAnimal =
-  | "gorilla"
-  | "redPanda"
-  | "humanBaby";
+  | "cat";
 
 type MissionQuiz = {
   targetUserId: string;
@@ -64,25 +56,7 @@ type MissionPageClientProps = {
 };
 
 const TOTAL_STAMP_COUNT = 10;
-
 const EFFECT_DURATION_MS = 2500;
-
-const EFFECT_ANIMALS: EffectAnimal[] = [
-  "gorilla",
-  "redPanda",
-  "humanBaby",
-];
-
-function getRandomEffectAnimal(): EffectAnimal {
-  const randomIndex = Math.floor(
-    Math.random() *
-      EFFECT_ANIMALS.length,
-  );
-
-  return EFFECT_ANIMALS[
-    randomIndex
-  ];
-}
 
 export default function MissionPageClient({
   initialQuiz,
@@ -252,35 +226,26 @@ export default function MissionPageClient({
           result.data;
 
         /*
-         * 回答ごとに
-         * ゴリラ・レッサーパンダ・赤ちゃん
-         * の中から1種類をランダムに選ぶ
+         * 猫の挙動確認用
+         * 必ずcatを選ぶ
          */
-        const randomAnimal =
-          getRandomEffectAnimal();
-
         setSelectedEffectAnimal(
-          randomAnimal,
+          "cat",
         );
 
         setIsAnswered(true);
-
         setIsCorrect(
           answerData.isCorrect,
         );
-
         setCorrectAnswer(
           answerData.correctAnswer,
         );
-
         setStampCount(
           answerData.stampCount,
         );
-
         setPetitReward(
           answerData.petitReward,
         );
-
         setRewardError(
           answerData.rewardError,
         );
@@ -299,9 +264,7 @@ export default function MissionPageClient({
               answerData.stampCount ===
                 TOTAL_STAMP_COUNT
             ) {
-              setShowStampComplete(
-                true,
-              );
+              setShowStampComplete(true);
             }
           }, EFFECT_DURATION_MS);
         } else {
@@ -369,38 +332,14 @@ export default function MissionPageClient({
     <>
       {showCelebration &&
         selectedEffectAnimal ===
-          "gorilla" && (
-          <GorillaCorrectEffect />
-        )}
-
-      {showCelebration &&
-        selectedEffectAnimal ===
-          "redPanda" && (
-          <RedPandaCorrectEffect />
-        )}
-
-      {showCelebration &&
-        selectedEffectAnimal ===
-          "humanBaby" && (
-          <HumanBabyCorrectEffect />
+          "cat" && (
+          <CatCorrectEffect />
         )}
 
       {showIncorrectEffect &&
         selectedEffectAnimal ===
-          "gorilla" && (
-          <GorillaIncorrectEffect />
-        )}
-
-      {showIncorrectEffect &&
-        selectedEffectAnimal ===
-          "redPanda" && (
-          <RedPandaIncorrectEffect />
-        )}
-
-      {showIncorrectEffect &&
-        selectedEffectAnimal ===
-          "humanBaby" && (
-          <HumanBabyIncorrectEffect />
+          "cat" && (
+          <CatIncorrectEffect />
         )}
 
       {showStampComplete && (
