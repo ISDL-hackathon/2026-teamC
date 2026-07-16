@@ -7,6 +7,18 @@ import {
 } from "react";
 import { submitMissionAnswer } from "./actions";
 
+import GorillaCorrectEffect from "./effect/gorilla/GorillaCorrectEffect";
+import GorillaIncorrectEffect from "./effect/gorilla/GorillaIncorrectEffect";
+
+import RedPandaCorrectEffect from "./effect/red_panda/RedPandaCorrectEffect";
+import RedPandaIncorrectEffect from "./effect/red_panda/RedPandaIncorrectEffect";
+
+import HumanBabyCorrectEffect from "./effect/human_baby/HumanBabyCorrectEffect";
+import HumanBabyIncorrectEffect from "./effect/human_baby/HumanBabyIncorrectEffect";
+
+import CatCorrectEffect from "./effect/cat/CatCorrectEffect";
+import CatIncorrectEffect from "./effect/cat/CatIncorrectEffect";
+
 import AlpacaCorrectEffect from "./effect/alpaca/AlpacaCorrectEffect";
 import AlpacaIncorrectEffect from "./effect/alpaca/AlpacaIncorrectEffect";
 
@@ -15,6 +27,13 @@ import styles from "./page.module.css";
 type QuestionType =
   | "favorite_subject"
   | "favorite_color";
+
+type EffectAnimal =
+  | "gorilla"
+  | "redPanda"
+  | "humanBaby"
+  | "cat"
+  | "alpaca";
 
 type MissionQuiz = {
   targetUserId: string;
@@ -54,6 +73,32 @@ type MissionPageClientProps = {
 
 const TOTAL_STAMP_COUNT = 10;
 const EFFECT_DURATION_MS = 2500;
+
+/*
+ * 5種類の動物を同じ確率で選ぶための配列
+ */
+const EFFECT_ANIMALS: EffectAnimal[] = [
+  "gorilla",
+  "redPanda",
+  "humanBaby",
+  "cat",
+  "alpaca",
+];
+
+/*
+ * EFFECT_ANIMALSの中から
+ * 1種類を等確率で選択する
+ */
+function getRandomEffectAnimal(): EffectAnimal {
+  const randomIndex = Math.floor(
+    Math.random() *
+      EFFECT_ANIMALS.length,
+  );
+
+  return EFFECT_ANIMALS[
+    randomIndex
+  ];
+}
 
 export default function MissionPageClient({
   initialQuiz,
@@ -116,6 +161,13 @@ export default function MissionPageClient({
     showIncorrectEffect,
     setShowIncorrectEffect,
   ] = useState(false);
+
+  const [
+    selectedEffectAnimal,
+    setSelectedEffectAnimal,
+  ] = useState<EffectAnimal | null>(
+    null,
+  );
 
   const [
     showStampComplete,
@@ -214,6 +266,17 @@ export default function MissionPageClient({
 
         const answerData =
           result.data;
+
+        /*
+         * 回答ごとに5種類の中から
+         * 1種類を等確率で選ぶ
+         */
+        const randomAnimal =
+          getRandomEffectAnimal();
+
+        setSelectedEffectAnimal(
+          randomAnimal,
+        );
 
         setIsAnswered(true);
 
@@ -319,13 +382,65 @@ export default function MissionPageClient({
 
   return (
     <>
-      {showCorrectEffect && (
-        <AlpacaCorrectEffect />
-      )}
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "gorilla" && (
+          <GorillaCorrectEffect />
+        )}
 
-      {showIncorrectEffect && (
-        <AlpacaIncorrectEffect />
-      )}
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "redPanda" && (
+          <RedPandaCorrectEffect />
+        )}
+
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "humanBaby" && (
+          <HumanBabyCorrectEffect />
+        )}
+
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "cat" && (
+          <CatCorrectEffect />
+        )}
+
+      {showCorrectEffect &&
+        selectedEffectAnimal ===
+          "alpaca" && (
+          <AlpacaCorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "gorilla" && (
+          <GorillaIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "redPanda" && (
+          <RedPandaIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "humanBaby" && (
+          <HumanBabyIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "cat" && (
+          <CatIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "alpaca" && (
+          <AlpacaIncorrectEffect />
+        )}
 
       {showStampComplete && (
         <div
