@@ -4,6 +4,21 @@ import { createClient } from "@/lib/supabase/server";
 
 const TOTAL_STAMP_COUNT = 10;
 
+/**
+ * 演出確認用モード
+ *
+ * true:
+ * ・回答結果だけを返す
+ * ・回答履歴を保存しない
+ * ・ポイントを付与しない
+ * ・スタンプを増やさない
+ * ・リロードすると再回答できる
+ *
+ * false:
+ * ・通常どおり、1日1回だけ回答できる
+ */
+const EFFECT_TEST_MODE = true;
+
 type QuestionType =
   | "favorite_subject"
   | "favorite_color";
@@ -77,13 +92,13 @@ type MonthlyPetitQuestionRow = {
   id: number;
   target_month: string;
   question:
-  | {
-    question_text: string;
-  }
-  | {
-    question_text: string;
-  }[]
-  | null;
+    | {
+        question_text: string;
+      }
+    | {
+        question_text: string;
+      }[]
+    | null;
 };
 
 /**
@@ -219,9 +234,9 @@ function shuffleWithSeed<T>(
       shuffled[index],
       shuffled[randomIndex],
     ] = [
-        shuffled[randomIndex],
-        shuffled[index],
-      ];
+      shuffled[randomIndex],
+      shuffled[index],
+    ];
   }
 
   return shuffled;
@@ -293,11 +308,11 @@ function getProfileIcon(
 function getMonthlyPetitQuestionText(
   question:
     | {
-      question_text: string;
-    }
+        question_text: string;
+      }
     | {
-      question_text: string;
-    }[]
+        question_text: string;
+      }[]
     | null,
 ) {
   if (Array.isArray(question)) {
@@ -329,9 +344,9 @@ function createQuizOptions(
     questionType ===
       "favorite_subject"
       ? targetProfile
-        .favorite_subject
+          .favorite_subject
       : targetProfile
-        .favorite_color;
+          .favorite_color;
 
   const answersFromMembers =
     missionProfiles.map(
@@ -339,9 +354,9 @@ function createQuizOptions(
         questionType ===
           "favorite_subject"
           ? profile
-            .favorite_subject
+              .favorite_subject
           : profile
-            .favorite_color,
+              .favorite_color,
     );
 
   const candidateOptions = [
@@ -465,14 +480,14 @@ export async function getMissionPageData():
    */
   const {
     startDate:
-    currentMonthKey,
+      currentMonthKey,
   } = getJapanMonthRange();
 
   const {
     data:
-    monthlyPetitQuestionData,
+      monthlyPetitQuestionData,
     error:
-    monthlyPetitQuestionError,
+      monthlyPetitQuestionError,
   } = await supabase
     .from(
       "monthly_petit_questions",
@@ -515,7 +530,7 @@ export async function getMissionPageData():
 
   const monthlyPetitQuestion =
     monthlyPetitQuestionData as
-    MonthlyPetitQuestionRow;
+      MonthlyPetitQuestionRow;
 
   const rewardQuestionText =
     getMonthlyPetitQuestionText(
@@ -528,7 +543,7 @@ export async function getMissionPageData():
   const {
     data: missionProfiles,
     error:
-    missionProfilesError,
+      missionProfilesError,
   } = await supabase
     .from("mission_profiles")
     .select(`
@@ -566,10 +581,14 @@ export async function getMissionPageData():
 
   const typedMissionProfiles =
     missionProfiles as
-    MissionProfileRow[];
+      MissionProfileRow[];
 
   /*
-   * 今日の回答履歴を確認
+   * 今日の回答履歴を確認する
+   *
+   * テストモードでもクイズ内容を
+   * 今日の内容に固定するため取得する。
+   * ただし、画面には未回答として返す。
    */
   const {
     data: todayAttempt,
@@ -625,7 +644,7 @@ export async function getMissionPageData():
     questionType =
       todayAttempt
         .question_type as
-      QuestionType;
+        QuestionType;
   } else {
     const targetIndex =
       createSeed(
@@ -635,7 +654,7 @@ export async function getMissionPageData():
 
     targetProfile =
       typedMissionProfiles[
-      targetIndex
+        targetIndex
       ];
 
     const questionSeed =
@@ -661,9 +680,9 @@ export async function getMissionPageData():
    */
   const {
     data:
-    targetUserProfile,
+      targetUserProfile,
     error:
-    targetUserProfileError,
+      targetUserProfileError,
   } = await supabase
     .from("profiles")
     .select(`
@@ -695,7 +714,7 @@ export async function getMissionPageData():
 
   const profile =
     targetUserProfile as
-    ProfileRow | null;
+      ProfileRow | null;
 
   const targetRealName =
     profile?.real_name
@@ -711,9 +730,9 @@ export async function getMissionPageData():
     questionType ===
       "favorite_subject"
       ? targetProfile
-        .favorite_subject
+          .favorite_subject
       : targetProfile
-        .favorite_color;
+          .favorite_color;
 
   const options =
     createQuizOptions(
@@ -752,7 +771,7 @@ export async function getMissionPageData():
         targetIcon:
           getProfileIcon(
             profile ??
-            undefined,
+              undefined,
           ),
 
         questionType,
@@ -766,22 +785,31 @@ export async function getMissionPageData():
         options,
       },
 
-      attempt: todayAttempt
-        ? {
-          selectedAnswer:
-            todayAttempt
-              .selected_answer,
+      /*
+       * テストモードでは、
+       * 既存の回答履歴があっても未回答として表示する
+       */
+      attempt:
+        EFFECT_TEST_MODE
+          ? null
+          : todayAttempt
+            ? {
+                selectedAnswer:
+                  todayAttempt
+                    .selected_answer,
 
-          isCorrect:
-            todayAttempt
-              .is_correct,
-        }
-        : null,
+                isCorrect:
+                  todayAttempt
+                    .is_correct,
+              }
+            : null,
 
       correctAnswer:
-        todayAttempt
-          ? correctAnswer
-          : null,
+        EFFECT_TEST_MODE
+          ? null
+          : todayAttempt
+            ? correctAnswer
+            : null,
 
       stampCount,
 
@@ -833,9 +861,9 @@ export async function submitMissionAnswer(
 
   if (
     questionType !==
-    "favorite_subject" &&
+      "favorite_subject" &&
     questionType !==
-    "favorite_color"
+      "favorite_color"
   ) {
     return {
       error:
@@ -852,7 +880,7 @@ export async function submitMissionAnswer(
   const {
     data: existingAttempt,
     error:
-    existingAttemptError,
+      existingAttemptError,
   } = await supabase
     .from(
       "mission_quiz_attempts",
@@ -882,7 +910,14 @@ export async function submitMissionAnswer(
     };
   }
 
-  if (existingAttempt) {
+  /*
+   * 通常モードだけ、
+   * 回答済みの場合に処理を止める
+   */
+  if (
+    existingAttempt &&
+    !EFFECT_TEST_MODE
+  ) {
     return {
       error:
         "今日のクイズにはすでに回答済みです。",
@@ -895,7 +930,7 @@ export async function submitMissionAnswer(
   const {
     data: targetProfile,
     error:
-    targetProfileError,
+      targetProfileError,
   } = await supabase
     .from("mission_profiles")
     .select(`
@@ -927,16 +962,53 @@ export async function submitMissionAnswer(
     questionType ===
       "favorite_subject"
       ? targetProfile
-        .favorite_subject
+          .favorite_subject
       : targetProfile
-        .favorite_color;
+          .favorite_color;
 
   const isCorrect =
     selectedAnswer.trim() ===
     correctAnswer.trim();
 
   /*
-   * 回答履歴を保存
+   * 演出確認モード
+   *
+   * 判定結果だけを画面へ返し、
+   * データベースには何も保存しない。
+   */
+  if (EFFECT_TEST_MODE) {
+    let stampCount = 0;
+
+    try {
+      stampCount =
+        await getMonthlyStampCount(
+          user.id,
+        );
+    } catch (error) {
+      console.error(error);
+
+      return {
+        error:
+          "スタンプ数を取得できませんでした。",
+      };
+    }
+
+    return {
+      data: {
+        isCorrect,
+        correctAnswer,
+        stampCount,
+        awardedPoints: 0,
+        petitReward: null,
+        rewardError: null,
+      },
+    };
+  }
+
+  /*
+   * ここから通常モードの処理
+   *
+   * 回答履歴を保存する
    */
   const {
     error: insertError,
@@ -1033,15 +1105,18 @@ export async function submitMissionAnswer(
     };
   }
 
-  let petitReward: PetitReward | null =
+  let petitReward:
+    PetitReward | null =
     null;
 
-  let rewardError: string | null =
+  let rewardError:
+    string | null =
     null;
 
   if (
     isCorrect &&
-    stampCount === TOTAL_STAMP_COUNT
+    stampCount ===
+      TOTAL_STAMP_COUNT
   ) {
     const {
       data: rewardData,

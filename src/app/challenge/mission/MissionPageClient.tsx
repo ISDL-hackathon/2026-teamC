@@ -6,6 +6,8 @@ import {
   useTransition,
 } from "react";
 import { submitMissionAnswer } from "./actions";
+import GorillaCorrectEffect from "./effect/gorilla/GorillaCorrectEffect";
+import GorillaIncorrectEffect from "./effect/gorilla/GorillaIncorrectEffect";
 import styles from "./page.module.css";
 
 type QuestionType =
@@ -92,6 +94,11 @@ export default function MissionPageClient({
     showCelebration,
     setShowCelebration,
   ] = useState(false);
+
+const [
+  showIncorrectEffect,
+  setShowIncorrectEffect,
+] = useState(false);
 
   const [
     showStampComplete,
@@ -219,7 +226,13 @@ export default function MissionPageClient({
             setShowStampComplete(true);
           }
         }, 2500);
-      }
+} else {
+  setShowIncorrectEffect(true);
+
+  window.setTimeout(() => {
+    setShowIncorrectEffect(false);
+  }, 2500);
+}
     });
   };
 
@@ -266,67 +279,21 @@ export default function MissionPageClient({
     return classNames.join(" ");
   };
 
-  return (
-    <>
-      {showCelebration && (
-        <div
-          className={
-            styles.celebrationOverlay
-          }
-          role="status"
-          aria-live="polite"
-        >
-          <div
-            className={
-              styles.confettiLayer
-            }
-            aria-hidden="true"
-          >
-            <span>🎉</span>
-            <span>✨</span>
-            <span>🎊</span>
-            <span>⭐</span>
-            <span>👏</span>
-            <span>✨</span>
-            <span>🎉</span>
-            <span>🎊</span>
-          </div>
+return (
+  <>
+    {showCelebration && (
+      <GorillaCorrectEffect />
+    )}
 
-          <div
-            className={
-              styles.celebrationContent
-            }
-          >
-            <div
-              className={
-                styles.bigEmoji
-              }
-            >
-              🎉 👏 🎉
-            </div>
+    {showIncorrectEffect && (
+      <GorillaIncorrectEffect />
+    )}
 
-            <h1>正解！</h1>
-
-            <p>
-              スタンプを1個獲得しました！
-            </p>
-
-            <div
-              className={
-                styles.sparkles
-              }
-            >
-              ✨ Congratulations! ✨
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showStampComplete && (
-        <div
-          className={
-            styles.completeOverlay
-          }
+    {showStampComplete && (
+      <div
+        className={
+          styles.completeOverlay
+        }
           role="dialog"
           aria-modal="true"
           aria-labelledby="reward-title"
