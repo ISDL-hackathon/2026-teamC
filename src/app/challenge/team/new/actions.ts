@@ -3,10 +3,97 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+
+export type NominatimPlace = {
+  place_id: number;
+  display_name: string;
+  name?: string;
+  lat: string;
+  lon: string;
+  type?: string;
+  class?: string;
+};
+
+type SearchPlacesResult = {
+  places: NominatimPlace[];
+  error: string | null;
+};
+
+export async function searchPlaces(
+  query: string,
+): Promise<SearchPlacesResult> {
+  const trimmedQuery = query.trim();
+
+  if (!trimmedQuery) {
+    return {
+      places: [],
+      error: "場所名を入力してください。",
+    };
+  }
+
+  const params = new URLSearchParams({
+    format: "jsonv2",
+    q: trimmedQuery,
+    limit: "5",
+    countrycodes: "jp",
+    "accept-language": "ja",
+  });
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?${params.toString()}`,
+      {
+        headers: {
+          "User-Agent":
+            "2026-TeamC-LabApp/1.0",
+          "Accept-Language": "ja",
+        },
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) {
+      console.error(
+        "場所検索レスポンスエラー:",
+        response.status,
+      );
+
+      return {
+        places: [],
+        error:
+          "場所を検索できませんでした。",
+      };
+    }
+
+    const places =
+      (await response.json()) as NominatimPlace[];
+
+    return {
+      places,
+      error: null,
+    };
+  } catch (error) {
+    console.error(
+      "場所検索エラー:",
+      error,
+    );
+
+    return {
+      places: [],
+      error:
+        "場所の検索中にエラーが発生しました。",
+    };
+  }
+}
+
 type FormValues = {
   title: string;
   comment: string;
   location: string;
+  locationAddress: string;
+  locationPlaceId: string;
+  locationLatitudeValue: string;
+  locationLongitudeValue: string;
   eventAtValue: string;
   deadlineValue: string;
   capacityValue: number;
@@ -26,15 +113,23 @@ function redirectWithError(
   clearDateFields: ClearDateFields = {},
 ): never {
   const searchParams =
-    new URLSearchParams({
-      error: message,
-      title: values.title,
-      comment: values.comment,
-      location: values.location,
-      capacity: String(
-        values.capacityValue,
-      ),
-    });
+  new URLSearchParams({
+    error: message,
+    title: values.title,
+    comment: values.comment,
+    location: values.location,
+    location_address:
+      values.locationAddress,
+    location_place_id:
+      values.locationPlaceId,
+    location_latitude:
+      values.locationLatitudeValue,
+    location_longitude:
+      values.locationLongitudeValue,
+    capacity: String(
+      values.capacityValue,
+    ),
+  });
 
   if (!clearDateFields.eventAt) {
     searchParams.set(
@@ -82,6 +177,31 @@ export async function createEvent(
     formData.get("location") ?? "",
   ).trim();
 
+  const locationAddress = String(
+  formData.get("location_address") ?? "",
+).trim();
+
+const locationPlaceId = String(
+  formData.get("location_place_id") ?? "",
+).trim();
+
+const locationLatitudeValue = String(
+  formData.get("location_latitude") ?? "",
+).trim();
+
+const locationLongitudeValue = String(
+  formData.get("location_longitude") ?? "",
+).trim();
+
+const locationLatitude = Number(
+  locationLatitudeValue,
+);
+
+const locationLongitude = Number(
+  locationLongitudeValue,
+);
+
+
   const eventAtValue = String(
     formData.get("event_at") ?? "",
   );
@@ -96,10 +216,14 @@ export async function createEvent(
     formData.get("capacity"),
   );
 
-  const formValues: FormValues = {
+ const formValues: FormValues = {
   title,
   comment,
   location,
+  locationAddress,
+  locationPlaceId,
+  locationLatitudeValue,
+  locationLongitudeValue,
   eventAtValue,
   deadlineValue,
   capacityValue,
@@ -113,12 +237,32 @@ export async function createEvent(
     );
   }
 
-  if (!location) {
-    redirectWithError(
-      "開催場所を入力してください。",
-      formValues,
-    );
-  }
+  if (
+  !location ||
+  !locationAddress ||
+  !locationPlaceId ||
+  !locationLatitudeValue ||
+  !locationLongitudeValue
+) {
+  redirectWithError(
+    "検索結果から開催場所を選択してください。",
+    formValues,
+  );
+}
+
+if (
+  !Number.isFinite(locationLatitude) ||
+  locationLatitude < -90 ||
+  locationLatitude > 90 ||
+  !Number.isFinite(locationLongitude) ||
+  locationLongitude < -180 ||
+  locationLongitude > 180
+) {
+  redirectWithError(
+    "開催場所の位置情報が正しくありません。場所を検索し直してください。",
+    formValues,
+  );
+}
 
   if (!eventAtValue) {
     redirectWithError(
@@ -216,16 +360,26 @@ export async function createEvent(
   } = await supabase
     .from("events")
     .insert({
-      creator_id: user.id,
-      title,
-      comment: comment || null,
-      location,
-      event_at:
-        eventAt.toISOString(),
-      recruitment_deadline:
-        recruitmentDeadline.toISOString(),
-      capacity: capacityValue,
-    })
+  creator_id: user.id,
+  title,
+  comment: comment || null,
+
+  location,
+  location_address:
+    locationAddress,
+  location_place_id:
+    locationPlaceId,
+  location_latitude:
+    locationLatitude,
+  location_longitude:
+    locationLongitude,
+
+  event_at:
+    eventAt.toISOString(),
+  recruitment_deadline:
+    recruitmentDeadline.toISOString(),
+  capacity: capacityValue,
+})
     .select("id")
     .single();
 
