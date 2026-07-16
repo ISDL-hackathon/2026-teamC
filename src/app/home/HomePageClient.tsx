@@ -60,18 +60,7 @@ export default function HomePageClient({
             混雑状況の目安として活用してください。
           </p>
 
-          <div className="statusCard heroStatusCard">
-            <div className="pinBox">📍</div>
-
-            <div className="statusText">
-              <h3>現在の研究室状況</h3>
-              <p>最新の入退室情報を表示中</p>
-            </div>
-
-            <div className="heroCount">
-              {labCount}人
-            </div>
-          </div>
+          
         </div>
 
         <div className="heroEmoji">👩‍💻</div>
