@@ -759,7 +759,7 @@ export default function MissionPageClient({
                     styles.celebration
                   }
                 >
-                  👏 🎉
+              
                 </div>
 
                 <strong>
