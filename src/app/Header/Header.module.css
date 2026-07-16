@@ -12,7 +12,7 @@
   height: 64px;
   padding: 0 22px;
 
-  background: #ffffff;
+  background:#ef3f43 ;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 
   transform: translateX(-50%);
@@ -27,7 +27,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: #333333;
+  color:#ffffff ;
   font-size: 24px;
   text-decoration: none;
   cursor: pointer;
@@ -41,7 +41,7 @@
 
 .logo {
   margin: 0;
-  color: #ef3f43;
+  color: #ffffff;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
