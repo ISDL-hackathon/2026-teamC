@@ -41,6 +41,31 @@ export async function updateEvent(
     formData.get("location") ?? "",
   ).trim();
 
+  const locationAddress = String(
+  formData.get("location_address") ?? "",
+).trim();
+
+const locationPlaceId = String(
+  formData.get("location_place_id") ?? "",
+).trim();
+
+const locationLatitudeValue = String(
+  formData.get("location_latitude") ?? "",
+).trim();
+
+const locationLongitudeValue = String(
+  formData.get("location_longitude") ?? "",
+).trim();
+
+const locationLatitude = Number(
+  locationLatitudeValue,
+);
+
+const locationLongitude = Number(
+  locationLongitudeValue,
+);
+
+
   const eventAtValue = String(
     formData.get("event_at") ?? "",
   );
@@ -60,12 +85,33 @@ export async function updateEvent(
     );
   }
 
-  if (!location) {
-    redirectWithError(
-      eventId,
-      "開催場所を入力してください。",
-    );
-  }
+  if (
+  !location ||
+  !locationAddress ||
+  !locationPlaceId ||
+  !locationLatitudeValue ||
+  !locationLongitudeValue
+) {
+  redirectWithError(
+    eventId,
+    "検索結果から開催場所を選択してください。",
+  );
+}
+
+if (
+  !Number.isFinite(locationLatitude) ||
+  locationLatitude < -90 ||
+  locationLatitude > 90 ||
+  !Number.isFinite(locationLongitude) ||
+  locationLongitude < -180 ||
+  locationLongitude > 180
+) {
+  redirectWithError(
+    eventId,
+    "開催場所の位置情報が正しくありません。場所を検索し直してください。",
+  );
+}
+
 
   if (!eventAtValue) {
     redirectWithError(
@@ -158,15 +204,25 @@ export async function updateEvent(
   } = await supabase
     .from("events")
     .update({
-      title,
-      comment: comment || null,
-      location,
-      event_at: eventAt.toISOString(),
-      recruitment_deadline:
-        recruitmentDeadline.toISOString(),
-      capacity,
-      updated_at: new Date().toISOString(),
-    })
+  title,
+  comment: comment || null,
+
+  location,
+  location_address:
+    locationAddress,
+  location_place_id:
+    locationPlaceId,
+  location_latitude:
+    locationLatitude,
+  location_longitude:
+    locationLongitude,
+
+  event_at: eventAt.toISOString(),
+  recruitment_deadline:
+    recruitmentDeadline.toISOString(),
+  capacity,
+  updated_at: new Date().toISOString(),
+})
     .eq("id", eventId)
     .eq("creator_id", user.id)
     .select("id")
