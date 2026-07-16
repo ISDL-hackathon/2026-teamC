@@ -32,6 +32,38 @@ function ChallengeIcon() {
   );
 }
 
+function RankingIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M8 4h8v3a4 4 0 0 1-8 0V4Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+
+      <path
+        d="M8 6H5v1a4 4 0 0 0 4 4M16 6h3v1a4 4 0 0 1-4 4"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+
+      <path
+        d="M12 11v4M9 20h6M10 15h4v5h-4z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 function ScanIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -62,6 +94,9 @@ export default function BottomNav() {
 
   const isChallengeActive =
     pathname.startsWith("/challenge");
+
+  const isRankingActive =
+    pathname.startsWith("/ranking");
 
   const isScanActive =
     pathname === "/scan";
@@ -99,6 +134,21 @@ export default function BottomNav() {
       >
         <ChallengeIcon />
         <span>チャレンジ</span>
+      </Link>
+
+      <Link
+        href="/ranking"
+        className={`${styles.navigationItem} ${
+          isRankingActive
+            ? styles.navigationItemActive
+            : ""
+        }`}
+        aria-current={
+          isRankingActive ? "page" : undefined
+        }
+      >
+        <RankingIcon />
+        <span>ランキング</span>
       </Link>
 
       <Link
