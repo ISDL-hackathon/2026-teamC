@@ -64,7 +64,11 @@ export default function HomePageClient({
         <div className="heroEmoji">👩‍💻</div>
       </section>
 
-      <section className="qrCard">
+      <Link
+        href="/scan"
+        className="qrCard"
+        aria-label="QRスキャン画面を開く"
+      >
         <div>
           <h3>QRをスキャンする</h3>
 
@@ -75,14 +79,13 @@ export default function HomePageClient({
           </p>
         </div>
 
-        <Link
-          href="/scan"
+        <span
           className="scanButton"
-          aria-label="QRスキャン画面を開く"
+          aria-hidden="true"
         >
           ⌁
-        </Link>
-      </section>
+        </span>
+      </Link>
 
       <button
         type="button"
