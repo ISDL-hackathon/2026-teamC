@@ -37,6 +37,7 @@ type SubmitMissionAnswerResult = {
     isCorrect: boolean;
     correctAnswer: string;
     stampCount: number;
+    awardedPoints: number;
   };
   error?: string;
 };
@@ -680,7 +681,7 @@ export async function submitMissionAnswer(
         is_correct: isCorrect,
       });
 
-  if (insertError) {
+    if (insertError) {
     console.error(
       "クイズ回答保存エラー:",
       insertError,
@@ -701,6 +702,31 @@ export async function submitMissionAnswer(
     };
   }
 
+  let awardedPoints = 0;
+
+  if (isCorrect) {
+    const {
+      data: quizPoints,
+      error: pointError,
+    } = await supabase.rpc(
+      "award_quiz_points",
+      {
+        target_quiz_date: todayKey,
+      },
+    );
+
+    if (pointError) {
+      console.error(
+        "クイズポイント付与エラー:",
+        pointError,
+      );
+    } else if (
+      typeof quizPoints === "number"
+    ) {
+      awardedPoints = quizPoints;
+    }
+  }
+
   let stampCount = 0;
 
   try {
@@ -717,11 +743,12 @@ export async function submitMissionAnswer(
     };
   }
 
-  return {
+    return {
     data: {
       isCorrect,
       correctAnswer,
       stampCount,
+      awardedPoints,
     },
   };
 }

@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  useState,
-  useTransition,
-} from "react";
+import { useTransition } from "react";
 import Header from "../Header/Header";
 import BottomNav from "../BottomNav/BottomNav";
 import { leaveLab } from "./actions";
@@ -15,16 +12,16 @@ type HomePageClientProps = {
   labCount: number;
   isInLab: boolean;
   checkInCount: number;
+  totalPoints: number;
 };
 
 export default function HomePageClient({
   labCount,
   isInLab,
   checkInCount,
+  totalPoints,
 }: HomePageClientProps) {
   const router = useRouter();
-
-  const [points] = useState(1250);
 
   const [isLeaving, startLeaveTransition] =
     useTransition();
@@ -46,41 +43,39 @@ export default function HomePageClient({
       <Header />
 
       <section className="hero">
-  <div className="heroContent">
-    <p className="sectionLabel heroLabel">
-      LAB STATUS
-    </p>
+        <div className="heroContent">
+          <p className="sectionLabel heroLabel">
+            LAB STATUS
+          </p>
 
-    <h2>
-      研究室は今
-      <br />
-      {labCount}人です
-    </h2>
+          <h2>
+            研究室は今
+            <br />
+            {labCount}人です
+          </h2>
 
-    <p className="heroText">
-      現在研究室にいる人数を確認できます。
-      <br />
-      混雑状況の目安として活用してください。
-    </p>
+          <p className="heroText">
+            現在研究室にいる人数を確認できます。
+            <br />
+            混雑状況の目安として活用してください。
+          </p>
 
-    <div className="statusCard heroStatusCard">
-  <div className="pinBox">📍</div>
+          <div className="statusCard heroStatusCard">
+            <div className="pinBox">📍</div>
 
-  <div className="statusText">
-    <h3>現在の研究室状況</h3>
-    <p>最新の入退室情報を表示中</p>
-  </div>
+            <div className="statusText">
+              <h3>現在の研究室状況</h3>
+              <p>最新の入退室情報を表示中</p>
+            </div>
 
-  <div className="heroCount">
-    {labCount}人
-  </div>
-</div>
-  </div>
+            <div className="heroCount">
+              {labCount}人
+            </div>
+          </div>
+        </div>
 
-  <div className="heroEmoji">👩‍💻</div>
-</section>
-
-      
+        <div className="heroEmoji">👩‍💻</div>
+      </section>
 
       <button
         type="button"
@@ -204,7 +199,7 @@ export default function HomePageClient({
 
         <div className="pointValue">
           <strong>
-            {points.toLocaleString()}
+            {totalPoints.toLocaleString()}
           </strong>
 
           <span>pt</span>

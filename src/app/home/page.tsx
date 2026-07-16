@@ -14,18 +14,21 @@ export default async function HomePage() {
   }
 
   const { error: cleanupError } = await supabase.rpc(
-  "close_stale_attendance",
-);
-
- if (cleanupError) {
-  console.error(
-    "前日以前の入室データ整理エラー:",
-    cleanupError,
+    "close_stale_attendance",
   );
- }
+
+  if (cleanupError) {
+    console.error(
+      "前日以前の入室データ整理エラー:",
+      cleanupError,
+    );
+  }
 
   // 現在入室中の人数を取得
-  const { count: labCount, error: countError } = await supabase
+  const {
+    count: labCount,
+    error: countError,
+  } = await supabase
     .from("attendance_records")
     .select("id", {
       count: "exact",
@@ -34,17 +37,22 @@ export default async function HomePage() {
     .is("exited_at", null);
 
   if (countError) {
-    console.error("研究室人数の取得エラー:", countError);
+    console.error(
+      "研究室人数の取得エラー:",
+      countError,
+    );
   }
 
   // ログイン中のユーザーが現在入室中か確認
-  const { data: activeAttendance, error: attendanceError } =
-    await supabase
-      .from("attendance_records")
-      .select("id")
-      .eq("user_id", user.id)
-      .is("exited_at", null)
-      .maybeSingle();
+  const {
+    data: activeAttendance,
+    error: attendanceError,
+  } = await supabase
+    .from("attendance_records")
+    .select("id")
+    .eq("user_id", user.id)
+    .is("exited_at", null)
+    .maybeSingle();
 
   if (attendanceError) {
     console.error(
@@ -73,7 +81,10 @@ export default async function HomePage() {
       head: true,
     })
     .eq("user_id", user.id)
-    .gte("entered_at", startOfMonth.toISOString());
+    .gte(
+      "entered_at",
+      startOfMonth.toISOString(),
+    );
 
   if (monthlyCheckInError) {
     console.error(
@@ -82,11 +93,38 @@ export default async function HomePage() {
     );
   }
 
+  // 自分のポイント履歴を取得
+  const {
+    data: pointTransactions,
+    error: pointError,
+  } = await supabase
+    .from("point_transactions")
+    .select("amount")
+    .eq("user_id", user.id);
+
+  if (pointError) {
+    console.error(
+      "ポイント取得エラー:",
+      pointError,
+    );
+  }
+
+  // ポイントの合計を計算
+  const totalPoints =
+    pointTransactions?.reduce(
+      (total, transaction) =>
+        total + transaction.amount,
+      0,
+    ) ?? 0;
+
   return (
     <HomePageClient
       labCount={labCount ?? 0}
       isInLab={Boolean(activeAttendance)}
-      checkInCount={monthlyCheckInCount ?? 0}
+      checkInCount={
+        monthlyCheckInCount ?? 0
+      }
+      totalPoints={totalPoints}
     />
   );
 }
