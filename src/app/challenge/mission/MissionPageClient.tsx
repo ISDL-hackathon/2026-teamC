@@ -6,10 +6,16 @@ import {
   useTransition,
 } from "react";
 import { submitMissionAnswer } from "./actions";
+
 import GorillaCorrectEffect from "./effect/gorilla/GorillaCorrectEffect";
 import GorillaIncorrectEffect from "./effect/gorilla/GorillaIncorrectEffect";
+
 import RedPandaCorrectEffect from "./effect/red_panda/RedPandaCorrectEffect";
 import RedPandaIncorrectEffect from "./effect/red_panda/RedPandaIncorrectEffect";
+
+import HumanBabyCorrectEffect from "./effect/human_baby/HumanBabyCorrectEffect";
+import HumanBabyIncorrectEffect from "./effect/human_baby/HumanBabyIncorrectEffect";
+
 import styles from "./page.module.css";
 
 type QuestionType =
@@ -18,7 +24,8 @@ type QuestionType =
 
 type EffectAnimal =
   | "gorilla"
-  | "redPanda";
+  | "redPanda"
+  | "humanBaby";
 
 type MissionQuiz = {
   targetUserId: string;
@@ -57,7 +64,25 @@ type MissionPageClientProps = {
 };
 
 const TOTAL_STAMP_COUNT = 10;
+
 const EFFECT_DURATION_MS = 2500;
+
+const EFFECT_ANIMALS: EffectAnimal[] = [
+  "gorilla",
+  "redPanda",
+  "humanBaby",
+];
+
+function getRandomEffectAnimal(): EffectAnimal {
+  const randomIndex = Math.floor(
+    Math.random() *
+      EFFECT_ANIMALS.length,
+  );
+
+  return EFFECT_ANIMALS[
+    randomIndex
+  ];
+}
 
 export default function MissionPageClient({
   initialQuiz,
@@ -90,7 +115,8 @@ export default function MissionPageClient({
     isCorrect,
     setIsCorrect,
   ] = useState<boolean | null>(
-    initialAttempt?.isCorrect ?? null,
+    initialAttempt?.isCorrect ??
+      null,
   );
 
   const [
@@ -226,16 +252,12 @@ export default function MissionPageClient({
           result.data;
 
         /*
-         * 回答ごとに動物を1体選ぶ
-         *
-         * 50％：ゴリラ
-         * 50％：レッサーパンダ
+         * 回答ごとに
+         * ゴリラ・レッサーパンダ・赤ちゃん
+         * の中から1種類をランダムに選ぶ
          */
-        const randomAnimal:
-          EffectAnimal =
-          Math.random() < 0.5
-            ? "gorilla"
-            : "redPanda";
+        const randomAnimal =
+          getRandomEffectAnimal();
 
         setSelectedEffectAnimal(
           randomAnimal,
@@ -357,6 +379,12 @@ export default function MissionPageClient({
           <RedPandaCorrectEffect />
         )}
 
+      {showCelebration &&
+        selectedEffectAnimal ===
+          "humanBaby" && (
+          <HumanBabyCorrectEffect />
+        )}
+
       {showIncorrectEffect &&
         selectedEffectAnimal ===
           "gorilla" && (
@@ -367,6 +395,12 @@ export default function MissionPageClient({
         selectedEffectAnimal ===
           "redPanda" && (
           <RedPandaIncorrectEffect />
+        )}
+
+      {showIncorrectEffect &&
+        selectedEffectAnimal ===
+          "humanBaby" && (
+          <HumanBabyIncorrectEffect />
         )}
 
       {showStampComplete && (
