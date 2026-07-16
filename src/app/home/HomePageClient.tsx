@@ -59,11 +59,29 @@ export default function HomePageClient({
             <br />
             混雑状況の目安として活用してください。
           </p>
-
-          
         </div>
 
         <div className="heroEmoji">👩‍💻</div>
+      </section>
+
+      <section className="qrCard">
+        <div>
+          <h3>QRをスキャンする</h3>
+
+          <p>
+            研究室のQRを読み取って、
+            <br />
+            出席やチェックインを記録できます。
+          </p>
+        </div>
+
+        <Link
+          href="/scan"
+          className="scanButton"
+          aria-label="QRスキャン画面を開く"
+        >
+          ⌁
+        </Link>
       </section>
 
       <button
@@ -193,26 +211,6 @@ export default function HomePageClient({
 
           <span>pt</span>
         </div>
-      </section>
-
-      <section className="qrCard">
-        <div>
-          <h3>QRをスキャンする</h3>
-
-          <p>
-            研究室のQRを読み取って、
-            <br />
-            出席やチェックインを記録できます。
-          </p>
-        </div>
-
-        <Link
-          href="/scan"
-          className="scanButton"
-          aria-label="QRスキャン画面を開く"
-        >
-          ⌁
-        </Link>
       </section>
 
       <BottomNav />
