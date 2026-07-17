@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateEvent } from "./actions";
 import styles from "./page.module.css";
+import LocationSearch from "../../new/LocationSearch";
 
 type EditEventPageProps = {
   params: Promise<{
@@ -51,6 +52,10 @@ export default async function EditEventPage({
       title,
       comment,
       location,
+      location_address,
+      location_place_id,
+      location_latitude,
+      location_longitude,
       event_at,
       recruitment_deadline,
       capacity
@@ -132,21 +137,25 @@ export default async function EditEventPage({
           />
         </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="location">
-            場所
-            <span>必須</span>
-          </label>
-
-          <input
-            id="location"
-            name="location"
-            type="text"
-            defaultValue={event.location}
-            maxLength={100}
-            required
-          />
-        </div>
+        <LocationSearch
+  initialLocation={event.location}
+  initialAddress={
+    event.location_address ?? ""
+  }
+  initialPlaceId={
+    event.location_place_id ?? ""
+  }
+  initialLatitude={
+    event.location_latitude !== null
+      ? String(event.location_latitude)
+      : ""
+  }
+  initialLongitude={
+    event.location_longitude !== null
+      ? String(event.location_longitude)
+      : ""
+  }
+/>
 
         <div className={styles.formGroup}>
           <label htmlFor="event_at">

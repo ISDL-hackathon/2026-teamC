@@ -632,3 +632,29 @@
     text-align: left;
   }
 }
+
+.locationAddress {
+  display: -webkit-box;
+  max-width: 100%;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #888888;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mapLink {
+  margin-top: 6px;
+  color: #ef3f43;
+  font-size: 9px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.mapLink:hover {
+  text-decoration: underline;
+}

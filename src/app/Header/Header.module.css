@@ -1,28 +1,33 @@
-
 .header {
   position: fixed;
   top: 0;
   left: 50%;
   z-index: 100;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: min(390px, 100%);
+
+  width: min(100%, 440px);
   height: 64px;
   padding: 0 22px;
-  background: #ffffff;
+
+  background:#ef3f43 ;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+
   transform: translateX(-50%);
 }
 
 .headerButton {
+  position: relative;
+
   display: grid;
   width: 36px;
   height: 36px;
   padding: 0;
   border: none;
   background: transparent;
-  color: #333333;
+  color:#ffffff ;
   font-size: 24px;
   text-decoration: none;
   cursor: pointer;
@@ -36,7 +41,7 @@
 
 .logo {
   margin: 0;
-  color: #ef3f43;
+  color: #ffffff;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -49,9 +54,31 @@
   letter-spacing: 4px;
 }
 
+.notificationBadge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
 
-@media (max-width: 390px) {
-  .header {
-    width: 100%;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+
+  background: #ff3b30;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+
+  box-shadow:
+    0 2px 6px
+    rgba(190, 20, 20, 0.3);
+
+  pointer-events: none;
 }

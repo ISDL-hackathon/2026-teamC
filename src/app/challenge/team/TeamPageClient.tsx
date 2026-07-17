@@ -32,7 +32,13 @@ export type TeamEvent = {
   creator_id: string;
   title: string;
   comment: string | null;
+
   location: string;
+  location_address: string | null;
+  location_place_id: string | null;
+  location_latitude: number | null;
+  location_longitude: number | null;
+
   event_at: string;
   recruitment_deadline: string;
   capacity: number;
@@ -50,6 +56,21 @@ type TeamTab =
   | "recruiting"
   | "closed"
   | "joined";
+
+
+function createOpenStreetMapUrl(
+  latitude: number,
+  longitude: number,
+) {
+  const zoom = 17;
+
+  return (
+    "https://www.openstreetmap.org/" +
+    `?mlat=${latitude}` +
+    `&mlon=${longitude}` +
+    `#map=${zoom}/${latitude}/${longitude}`
+  );
+}
 
 export default function TeamPageClient({
   initialEvents,
@@ -499,23 +520,38 @@ function TeamPostCard({
             </strong>
           </div>
 
-          <div
-            className={styles.infoItem}
-          >
-            <span
-              className={
-                styles.infoIcon
-              }
-            >
-              📍
-            </span>
+          <div className={styles.infoItem}>
+  <span className={styles.infoIcon}>
+    📍
+  </span>
 
-            <small>場所</small>
+  <small>場所</small>
 
-            <strong>
-              {event.location}
-            </strong>
-          </div>
+  <strong>
+    {event.location}
+  </strong>
+
+  {event.location_address && (
+    <span className={styles.locationAddress}>
+      {event.location_address}
+    </span>
+  )}
+
+  {event.location_latitude !== null &&
+    event.location_longitude !== null && (
+      <a
+        href={createOpenStreetMapUrl(
+          event.location_latitude,
+          event.location_longitude,
+        )}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.mapLink}
+      >
+        地図を見る
+      </a>
+    )}
+</div>
 
           <div
             className={styles.infoItem}

@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  useState,
-  useTransition,
-} from "react";
+import { useTransition } from "react";
 import Header from "../Header/Header";
 import BottomNav from "../BottomNav/BottomNav";
 import { leaveLab } from "./actions";
@@ -14,79 +11,126 @@ import "./style.css";
 type HomePageClientProps = {
   labCount: number;
   isInLab: boolean;
+  hasCheckedInToday: boolean;
+  hasAnsweredQuizToday: boolean;
   checkInCount: number;
+  quizStampCount: number;
+  totalPoints: number;
 };
+
+const TOTAL_CHECK_IN_COUNT = 15;
+const TOTAL_QUIZ_STAMP_COUNT = 10;
 
 export default function HomePageClient({
   labCount,
   isInLab,
+  hasCheckedInToday,
+  hasAnsweredQuizToday,
   checkInCount,
+  quizStampCount,
+  totalPoints,
 }: HomePageClientProps) {
   const router = useRouter();
 
-  const [points] = useState(1250);
-
-  const [isLeaving, startLeaveTransition] =
-    useTransition();
+  const [
+    isLeaving,
+    startLeaveTransition,
+  ] = useTransition();
 
   const handleLeave = () => {
-    startLeaveTransition(async () => {
-      const result = await leaveLab();
+    startLeaveTransition(
+      async () => {
+        const result =
+          await leaveLab();
 
-      alert(result.message);
+        alert(result.message);
 
-      if (result.success) {
-        router.refresh();
-      }
-    });
+        if (result.success) {
+          router.refresh();
+        }
+      },
+    );
   };
+
+  const checkInProgress =
+    Math.min(
+      (
+        checkInCount /
+        TOTAL_CHECK_IN_COUNT
+      ) * 100,
+      100,
+    );
+
+  const quizProgress =
+    Math.min(
+      (
+        quizStampCount /
+        TOTAL_QUIZ_STAMP_COUNT
+      ) * 100,
+      100,
+    );
 
   return (
     <main className="app">
       <Header />
 
       <section className="hero">
-  <div className="heroContent">
-    <p className="sectionLabel heroLabel">
-      LAB STATUS
-    </p>
+        <div className="heroContent">
+          <p className="sectionLabel heroLabel">
+            LAB STATUS
+          </p>
 
-    <h2>
-      研究室は今
-      <br />
-      {labCount}人です
-    </h2>
+          <h2>
+            研究室は今
+            <br />
+            {labCount}人です
+          </h2>
 
-    <p className="heroText">
-      現在研究室にいる人数を確認できます。
-      <br />
-      混雑状況の目安として活用してください。
-    </p>
+          <p className="heroText">
+            現在研究室にいる人数を確認できます。
+            <br />
+            混雑状況の目安として活用してください。
+          </p>
+        </div>
 
-    <div className="statusCard heroStatusCard">
-  <div className="pinBox">📍</div>
+        <div className="heroEmoji">
+          👩‍💻
+        </div>
+      </section>
 
-  <div className="statusText">
-    <h3>現在の研究室状況</h3>
-    <p>最新の入退室情報を表示中</p>
-  </div>
+      <Link
+        href="/scan"
+        className="qrCard"
+        aria-label="QRスキャン画面を開く"
+      >
+        <div>
+          <h3>
+            QRをスキャンする
+          </h3>
 
-  <div className="heroCount">
-    {labCount}人
-  </div>
-</div>
-  </div>
+          <p>
+            研究室のQRを読み取って、
+            <br />
+            出席やチェックインを記録できます。
+          </p>
+        </div>
 
-  <div className="heroEmoji">👩‍💻</div>
-</section>
-
-      
+        <span
+          className="scanButton"
+          aria-hidden="true"
+        >
+          ⌁
+        </span>
+      </Link>
 
       <button
         type="button"
         className="leaveButton"
         onClick={handleLeave}
-        disabled={!isInLab || isLeaving}
+        disabled={
+          !isInLab ||
+          isLeaving
+        }
         aria-label="研究室から退席する"
       >
         <span
@@ -127,49 +171,147 @@ export default function HomePageClient({
       <section className="sectionHeader">
         <div>
           <p className="sectionLabel">
-            CHALLENGE
+            DAILY CHALLENGE
           </p>
 
-          <h2>今日のチャレンジ</h2>
+          <h2>
+            毎日のチャレンジ
+          </h2>
         </div>
-
-        <Link
-          href="/challenge"
-          className="linkButton"
-        >
-          もっと見る
-        </Link>
       </section>
 
-      <section className="challengeCard">
-        <span className="badge">
-          {isInLab ? "達成済" : "達成中"}
-        </span>
+      <section className="dailyTaskList">
+        <Link
+          href="/scan"
+          className="dailyTaskCard"
+          aria-label="研究室に行こうのQRスキャン画面を開く"
+        >
+          <div className="dailyTaskTop">
+            <div className="dailyTaskIcon">
+              📍
+            </div>
 
-        <h3>
-          研究室に来て1回チェックインしよう
-        </h3>
+            <div className="dailyTaskContent">
+              <span
+                className={
+                  hasCheckedInToday
+                    ? "taskStatusBadge completedBadge"
+                    : "taskStatusBadge incompleteBadge"
+                }
+              >
+                {hasCheckedInToday
+                  ? "達成済"
+                  : "未達成"}
+              </span>
 
-        <p>
-          研究室に来たらアプリで記録。毎日の継続状況を確認できます。
-        </p>
+              <h3>
+                研究室に行こう！！
+              </h3>
 
-        <div className="progressInfo">
-          <span>進捗</span>
-          <span>{checkInCount} / 15日</span>
-        </div>
+              <p>
+                研究室のQRコードを読み取って、
+                チェックインを記録しよう。
+              </p>
+            </div>
 
-        <div className="progressBar">
-          <div
-            className="progressFill"
-            style={{
-              width: `${Math.min(
-                (checkInCount / 15) * 100,
-                100,
-              )}%`,
-            }}
-          />
-        </div>
+            <span
+              className="dailyTaskArrow"
+              aria-hidden="true"
+            >
+              ›
+            </span>
+          </div>
+
+          <div className="dailyTaskProgress">
+            <div className="progressInfo">
+              <span>
+                今月の進捗
+              </span>
+
+              <span>
+                {checkInCount} /{" "}
+                {TOTAL_CHECK_IN_COUNT}
+                日
+              </span>
+            </div>
+
+            <div className="progressBar">
+              <div
+                className="progressFill"
+                style={{
+                  width:
+                    `${checkInProgress}%`,
+                }}
+              />
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/challenge/mission"
+          className="dailyTaskCard"
+          aria-label="今日のクイズ画面を開く"
+        >
+          <div className="dailyTaskTop">
+            <div className="dailyTaskIcon quizTaskIcon">
+              ❓
+            </div>
+
+            <div className="dailyTaskContent">
+              <span
+                className={
+                  hasAnsweredQuizToday
+                    ? "taskStatusBadge completedBadge"
+                    : "taskStatusBadge incompleteBadge"
+                }
+              >
+                {hasAnsweredQuizToday
+                  ? "達成済"
+                  : "未達成"}
+              </span>
+
+              <h3>
+                今日のクイズに答えよう！！
+              </h3>
+
+              <p>
+                今日のクイズに挑戦して、
+                ミッションスタンプを集めよう。
+              </p>
+            </div>
+
+            <span
+              className="dailyTaskArrow"
+              aria-hidden="true"
+            >
+              ›
+            </span>
+          </div>
+
+          <div className="dailyTaskProgress">
+            <div className="progressInfo">
+              <span>
+                今月の進捗
+              </span>
+
+              <span>
+                {quizStampCount} /{" "}
+                {TOTAL_QUIZ_STAMP_COUNT}
+                個
+              </span>
+            </div>
+
+            <div className="progressBar">
+              <div
+                className="progressFill quizProgressFill"
+                style={{
+                  width:
+                    `${quizProgress}%`,
+                }}
+              />
+            </div>
+          </div>
+        </Link>
       </section>
 
       <section className="sectionHeader walletHeader">
@@ -180,13 +322,6 @@ export default function HomePageClient({
 
           <h2>おさいふ</h2>
         </div>
-
-        <Link
-          href="/challenge/point"
-          className="linkButton"
-        >
-          明細を見る
-        </Link>
       </section>
 
       <section className="pointCard">
@@ -195,7 +330,9 @@ export default function HomePageClient({
             CURRENT BALANCE
           </p>
 
-          <h3>研究室ポイント</h3>
+          <h3>
+            研究室ポイント
+          </h3>
 
           <p>
             チェックインやチャレンジ達成で獲得
@@ -204,31 +341,11 @@ export default function HomePageClient({
 
         <div className="pointValue">
           <strong>
-            {points.toLocaleString()}
+            {totalPoints.toLocaleString()}
           </strong>
 
           <span>pt</span>
         </div>
-      </section>
-
-      <section className="qrCard">
-        <div>
-          <h3>QRをスキャンする</h3>
-
-          <p>
-            研究室のQRを読み取って、
-            <br />
-            出席やチェックインを記録できます。
-          </p>
-        </div>
-
-        <Link
-          href="/scan"
-          className="scanButton"
-          aria-label="QRスキャン画面を開く"
-        >
-          ⌁
-        </Link>
       </section>
 
       <BottomNav />

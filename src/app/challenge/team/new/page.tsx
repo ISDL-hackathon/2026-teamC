@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createEvent } from "./actions";
 import styles from "./page.module.css";
+import LocationSearch from "./LocationSearch";
 
 type NewEventPageProps = {
   searchParams: Promise<{
@@ -10,6 +11,10 @@ type NewEventPageProps = {
     title?: string;
     comment?: string;
     location?: string;
+    location_address?: string;
+    location_place_id?: string;
+    location_latitude?: string;
+    location_longitude?: string;
     event_at?: string;
     recruitment_deadline?: string;
     capacity?: string;
@@ -34,6 +39,10 @@ export default async function NewEventPage({
   title,
   comment,
   location,
+  location_address,
+  location_place_id,
+  location_latitude,
+  location_longitude,
   event_at,
   recruitment_deadline,
   capacity,
@@ -100,22 +109,21 @@ export default async function NewEventPage({
           />
         </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="location">
-            場所
-            <span>必須</span>
-          </label>
-
-          <input
-            id="location"
-            name="location"
-            type="text"
-            placeholder="例：研究室前"
-            maxLength={100}
-            defaultValue={location ?? ""}
-            required
-          />
-        </div>
+       <LocationSearch
+  initialLocation={location ?? ""}
+  initialAddress={
+    location_address ?? ""
+  }
+  initialPlaceId={
+    location_place_id ?? ""
+  }
+  initialLatitude={
+    location_latitude ?? ""
+  }
+  initialLongitude={
+    location_longitude ?? ""
+  }
+/>
 
         <div className={styles.formGroup}>
           <label htmlFor="event_at">

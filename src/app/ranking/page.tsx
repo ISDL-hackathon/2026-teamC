@@ -1,235 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import Header from "../Header/Header";
 import BottomNav from "../BottomNav/BottomNav";
+import {
+  getRankingData,
+  type RankingPeriod,
+  type RankingUser,
+} from "./actions";
 import styles from "./page.module.css";
 
-type RankingPeriod =
-  | "weekly"
-  | "monthly"
-  | "overall";
-
-type RankingUser = {
-  rank: number;
-  name: string;
-  icon: string;
-  point: number;
-  department: string;
-  isCurrentUser?: boolean;
-};
-
-type RankingPeriodData = {
+type RankingPeriodInformation = {
   label: string;
   topLabel: string;
   description: string;
-  updatedText: string;
-  users: RankingUser[];
 };
 
-const rankingData: Record<
+const periodInformation: Record<
   RankingPeriod,
-  RankingPeriodData
+  RankingPeriodInformation
 > = {
   weekly: {
     label: "週間",
     topLabel: "WEEKLY TOP 3",
     description:
       "今週集めたポイントのランキングです",
-    updatedText: "7月15日更新",
-    users: [
-      {
-        rank: 1,
-        name: "田中先輩",
-        icon: "👨‍💻",
-        point: 1520,
-        department: "大学院2年",
-      },
-      {
-        rank: 2,
-        name: "佐藤先輩",
-        icon: "👩‍💻",
-        point: 1340,
-        department: "大学院1年",
-      },
-      {
-        rank: 3,
-        name: "山田さん",
-        icon: "🐱",
-        point: 1180,
-        department: "学部4年",
-      },
-      {
-        rank: 4,
-        name: "鈴木さん",
-        icon: "🐶",
-        point: 980,
-        department: "学部4年",
-      },
-      {
-        rank: 5,
-        name: "あなた",
-        icon: "🤖",
-        point: 860,
-        department: "学部3年",
-        isCurrentUser: true,
-      },
-      {
-        rank: 6,
-        name: "高橋さん",
-        icon: "👨‍🦱",
-        point: 720,
-        department: "学部4年",
-      },
-      {
-        rank: 7,
-        name: "伊藤さん",
-        icon: "👱‍♀️",
-        point: 650,
-        department: "学部3年",
-      },
-      {
-        rank: 8,
-        name: "中村さん",
-        icon: "🐥",
-        point: 590,
-        department: "学部3年",
-      },
-    ],
   },
-
   monthly: {
     label: "月間",
     topLabel: "MONTHLY TOP 3",
     description:
       "今月集めたポイントのランキングです",
-    updatedText: "7月15日更新",
-    users: [
-      {
-        rank: 1,
-        name: "佐藤先輩",
-        icon: "👩‍💻",
-        point: 5840,
-        department: "大学院1年",
-      },
-      {
-        rank: 2,
-        name: "山田さん",
-        icon: "🐱",
-        point: 5270,
-        department: "学部4年",
-      },
-      {
-        rank: 3,
-        name: "田中先輩",
-        icon: "👨‍💻",
-        point: 4980,
-        department: "大学院2年",
-      },
-      {
-        rank: 4,
-        name: "あなた",
-        icon: "🤖",
-        point: 4360,
-        department: "学部3年",
-        isCurrentUser: true,
-      },
-      {
-        rank: 5,
-        name: "鈴木さん",
-        icon: "🐶",
-        point: 3980,
-        department: "学部4年",
-      },
-      {
-        rank: 6,
-        name: "中村さん",
-        icon: "🐥",
-        point: 3510,
-        department: "学部3年",
-      },
-      {
-        rank: 7,
-        name: "高橋さん",
-        icon: "👨‍🦱",
-        point: 3220,
-        department: "学部4年",
-      },
-      {
-        rank: 8,
-        name: "伊藤さん",
-        icon: "👱‍♀️",
-        point: 2890,
-        department: "学部3年",
-      },
-    ],
   },
-
   overall: {
     label: "総合",
     topLabel: "ALL-TIME TOP 3",
     description:
       "これまでに集めた合計ポイントのランキングです",
-    updatedText: "7月15日更新",
-    users: [
-      {
-        rank: 1,
-        name: "山田さん",
-        icon: "🐱",
-        point: 18540,
-        department: "学部4年",
-      },
-      {
-        rank: 2,
-        name: "田中先輩",
-        icon: "👨‍💻",
-        point: 17620,
-        department: "大学院2年",
-      },
-      {
-        rank: 3,
-        name: "佐藤先輩",
-        icon: "👩‍💻",
-        point: 15980,
-        department: "大学院1年",
-      },
-      {
-        rank: 4,
-        name: "鈴木さん",
-        icon: "🐶",
-        point: 13450,
-        department: "学部4年",
-      },
-      {
-        rank: 5,
-        name: "高橋さん",
-        icon: "👨‍🦱",
-        point: 12180,
-        department: "学部4年",
-      },
-      {
-        rank: 6,
-        name: "あなた",
-        icon: "🤖",
-        point: 10860,
-        department: "学部3年",
-        isCurrentUser: true,
-      },
-      {
-        rank: 7,
-        name: "伊藤さん",
-        icon: "👱‍♀️",
-        point: 9650,
-        department: "学部3年",
-      },
-      {
-        rank: 8,
-        name: "中村さん",
-        icon: "🐥",
-        point: 8920,
-        department: "学部3年",
-      },
-    ],
   },
 };
 
@@ -255,11 +66,42 @@ export default function RankingPage() {
   const [activePeriod, setActivePeriod] =
     useState<RankingPeriod>("weekly");
 
-  const currentRanking =
-    rankingData[activePeriod];
+  const [rankingUsers, setRankingUsers] =
+    useState<RankingUser[]>([]);
 
-  const rankingUsers =
-    currentRanking.users;
+  const [updatedText, setUpdatedText] =
+    useState("");
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+  const [isPending, startTransition] =
+    useTransition();
+
+  const currentPeriodInformation =
+    periodInformation[activePeriod];
+
+  useEffect(() => {
+    setErrorMessage("");
+
+    startTransition(async () => {
+      const result =
+        await getRankingData(
+          activePeriod,
+        );
+
+      setRankingUsers(result.users);
+      setUpdatedText(
+        result.updatedText,
+      );
+
+      if (result.error) {
+        setErrorMessage(
+          result.error,
+        );
+      }
+    });
+  }, [activePeriod]);
 
   const topThreeUsers =
     rankingUsers.slice(0, 3);
@@ -283,14 +125,17 @@ export default function RankingPage() {
 
   return (
     <main className={styles.page}>
-         <Header />
+      <Header />
+
       <section className={styles.content}>
         <div className={styles.heading}>
           <p className={styles.label}>
             RANKING
           </p>
 
-          <div className={styles.headingRow}>
+          <div
+            className={styles.headingRow}
+          >
             <div>
               <h1>
                 みんなのランキング
@@ -302,7 +147,7 @@ export default function RankingPage() {
                 }
               >
                 {
-                  currentRanking.description
+                  currentPeriodInformation.description
                 }
               </p>
             </div>
@@ -342,6 +187,7 @@ export default function RankingPage() {
                   activePeriod ===
                   period.key
                 }
+                disabled={isPending}
               >
                 {period.label}
               </button>
@@ -349,242 +195,283 @@ export default function RankingPage() {
           )}
         </div>
 
-        <div
-          key={activePeriod}
-          className={
-            styles.rankingContent
-          }
-        >
+        {errorMessage && (
+          <p
+            className={
+              styles.errorMessage
+            }
+            role="alert"
+          >
+            {errorMessage}
+          </p>
+        )}
+
+        {isPending ? (
           <section
             className={
-              styles.podiumCard
+              styles.loadingCard
             }
           >
-            <div
-              className={
-                styles.podiumHeader
-              }
-            >
-              <div>
-                <p
-                  className={
-                    styles.podiumLabel
-                  }
-                >
-                  {
-                    currentRanking.topLabel
-                  }
-                </p>
-
-                <h2>
-                  {currentRanking.label}
-                  のトップメンバー
-                </h2>
-              </div>
-
-              <span
-                className={
-                  styles.updatedText
-                }
-              >
-                {
-                  currentRanking.updatedText
-                }
-              </span>
-            </div>
-
-            <div
-              className={styles.podium}
-            >
-              <PodiumUser
-                user={secondPlaceUser}
-                placeClassName={
-                  styles.secondPlace
-                }
-              />
-
-              <PodiumUser
-                user={firstPlaceUser}
-                placeClassName={
-                  styles.firstPlace
-                }
-              />
-
-              <PodiumUser
-                user={thirdPlaceUser}
-                placeClassName={
-                  styles.thirdPlace
-                }
-              />
-            </div>
+            <p>
+              ランキングを読み込んでいます...
+            </p>
           </section>
-
+        ) : rankingUsers.length === 0 ? (
           <section
             className={
-              styles.rankingSection
+              styles.loadingCard
             }
           >
-            <div
+            <p>
+              ランキングデータがありません。
+            </p>
+          </section>
+        ) : (
+          <div
+            key={activePeriod}
+            className={
+              styles.rankingContent
+            }
+          >
+            <section
               className={
-                styles.sectionHeading
+                styles.podiumCard
               }
             >
-              <div>
-                <p
-                  className={
-                    styles.sectionLabel
-                  }
-                >
-                  ALL MEMBERS
-                </p>
-
-                <h2>
-                  ランキング一覧
-                </h2>
-              </div>
-
-              <span
+              <div
                 className={
-                  styles.memberCount
+                  styles.podiumHeader
                 }
               >
-                {rankingUsers.length}人
-              </span>
-            </div>
+                <div>
+                  <p
+                    className={
+                      styles.podiumLabel
+                    }
+                  >
+                    {
+                      currentPeriodInformation.topLabel
+                    }
+                  </p>
 
-            <div
+                  <h2>
+                    {
+                      currentPeriodInformation.label
+                    }
+                    のトップメンバー
+                  </h2>
+                </div>
+
+                <span
+                  className={
+                    styles.updatedText
+                  }
+                >
+                  {updatedText}
+                </span>
+              </div>
+
+              <div
+                className={
+                  styles.podium
+                }
+              >
+                {secondPlaceUser && (
+                  <PodiumUser
+                    user={
+                      secondPlaceUser
+                    }
+                    placeClassName={
+                      styles.secondPlace
+                    }
+                  />
+                )}
+
+                {firstPlaceUser && (
+                  <PodiumUser
+                    user={firstPlaceUser}
+                    placeClassName={
+                      styles.firstPlace
+                    }
+                  />
+                )}
+
+                {thirdPlaceUser && (
+                  <PodiumUser
+                    user={
+                      thirdPlaceUser
+                    }
+                    placeClassName={
+                      styles.thirdPlace
+                    }
+                  />
+                )}
+              </div>
+            </section>
+
+            <section
               className={
-                styles.rankingList
+                styles.rankingSection
               }
             >
-              {otherUsers.map(
-                (user) => (
-                  <article
-                    key={`${activePeriod}-${user.rank}`}
-                    className={`${styles.rankingItem} ${
-                      user.isCurrentUser
-                        ? styles.currentUserItem
-                        : ""
-                    }`}
+              <div
+                className={
+                  styles.sectionHeading
+                }
+              >
+                <div>
+                  <p
+                    className={
+                      styles.sectionLabel
+                    }
                   >
-                    <div
-                      className={
-                        styles.rankNumber
-                      }
-                    >
-                      {user.rank}
-                    </div>
+                    ALL MEMBERS
+                  </p>
 
-                    <div
-                      className={
-                        styles.avatar
-                      }
-                    >
-                      <span>
-                        {user.icon}
-                      </span>
-                    </div>
+                  <h2>
+                    ランキング一覧
+                  </h2>
+                </div>
 
-                    <div
-                      className={
-                        styles.userInformation
-                      }
+                <span
+                  className={
+                    styles.memberCount
+                  }
+                >
+                  {rankingUsers.length}人
+                </span>
+              </div>
+
+              <div
+                className={
+                  styles.rankingList
+                }
+              >
+                {otherUsers.map(
+                  (user) => (
+                    <article
+                      key={`${activePeriod}-${user.userId}`}
+                      className={`${styles.rankingItem} ${
+                        user.isCurrentUser
+                          ? styles.currentUserItem
+                          : ""
+                      }`}
                     >
                       <div
                         className={
-                          styles.nameRow
+                          styles.rankNumber
                         }
                       >
-                        <h3>
-                          {user.name}
-                        </h3>
-
-                        {user.isCurrentUser && (
-                          <span
-                            className={
-                              styles.youBadge
-                            }
-                          >
-                            YOU
-                          </span>
-                        )}
+                        {user.rank}
                       </div>
 
-                      <p>
-                        {
-                          user.department
+                      <ProfileAvatar
+                        user={user}
+                        className={
+                          styles.avatar
                         }
-                      </p>
-                    </div>
+                      />
 
-                    <div
-                      className={
-                        styles.pointArea
-                      }
-                    >
-                      <strong>
-                        {user.point.toLocaleString()}
-                      </strong>
+                      <div
+                        className={
+                          styles.userInformation
+                        }
+                      >
+                        <div
+                          className={
+                            styles.nameRow
+                          }
+                        >
+                          <h3>
+                            {user.nickname}
+                          </h3>
 
-                      <span>pt</span>
-                    </div>
-                  </article>
-                ),
-              )}
-            </div>
-          </section>
+                          {user.isCurrentUser && (
+                            <span
+                              className={
+                                styles.youBadge
+                              }
+                            >
+                              YOU
+                            </span>
+                          )}
+                        </div>
 
-          {currentUser && (
-            <section
-              className={
-                styles.myRankCard
-              }
-            >
-              <div
-                className={
-                  styles.myRankIcon
-                }
-              >
-                ⭐
-              </div>
+                        <p>
+                          {user.realName}
+                        </p>
+                      </div>
 
-              <div
-                className={
-                  styles.myRankText
-                }
-              >
-                <p>
-                  あなたの
-                  {
-                    currentRanking.label
-                  }
-                  順位
-                </p>
+                      <div
+                        className={
+                          styles.pointArea
+                        }
+                      >
+                        <strong>
+                          {user.point.toLocaleString()}
+                        </strong>
 
-                <h2>
-                  <span>
-                    {currentUser.rank}位
-                  </span>{" "}
-                  / {rankingUsers.length}
-                  人
-                </h2>
-              </div>
-
-              <div
-                className={
-                  styles.myRankPoint
-                }
-              >
-                <strong>
-                  {currentUser.point.toLocaleString()}
-                </strong>
-
-                <span>pt</span>
+                        <span>pt</span>
+                      </div>
+                    </article>
+                  ),
+                )}
               </div>
             </section>
-          )}
-        </div>
+
+            {currentUser && (
+              <section
+                className={
+                  styles.myRankCard
+                }
+              >
+                <div
+                  className={
+                    styles.myRankIcon
+                  }
+                >
+                  ⭐
+                </div>
+
+                <div
+                  className={
+                    styles.myRankText
+                  }
+                >
+                  <p>
+                    あなたの
+                    {
+                      currentPeriodInformation.label
+                    }
+                    順位
+                  </p>
+
+                  <h2>
+                    <span>
+                      {currentUser.rank}位
+                    </span>{" "}
+                    / {rankingUsers.length}
+                    人
+                  </h2>
+                </div>
+
+                <div
+                  className={
+                    styles.myRankPoint
+                  }
+                >
+                  <strong>
+                    {currentUser.point.toLocaleString()}
+                  </strong>
+
+                  <span>pt</span>
+                </div>
+              </section>
+            )}
+          </div>
+        )}
       </section>
+
       <BottomNav />
     </main>
   );
@@ -609,21 +496,22 @@ function PodiumUser({
     <article
       className={`${styles.podiumUser} ${placeClassName}`}
     >
-      <div className={styles.medal}>
+      <div
+        className={styles.medal}
+      >
         {rankMark}
       </div>
 
-      <div
+      <ProfileAvatar
+        user={user}
         className={
           styles.podiumAvatar
         }
-      >
-        <span>{user.icon}</span>
-      </div>
+      />
 
-      <h3>{user.name}</h3>
+      <h3>{user.nickname}</h3>
 
-      <p>{user.department}</p>
+      <p>{user.realName}</p>
 
       <div
         className={
@@ -645,5 +533,35 @@ function PodiumUser({
         <span>{user.rank}</span>
       </div>
     </article>
+  );
+}
+
+type ProfileAvatarProps = {
+  user: RankingUser;
+  className: string;
+};
+
+function ProfileAvatar({
+  user,
+  className,
+}: ProfileAvatarProps) {
+  if (user.avatarUrl) {
+    return (
+      <div className={className}>
+        <img
+          src={user.avatarUrl}
+          alt=""
+          className={
+            styles.avatarImage
+          }
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={className}>
+      <span>{user.icon}</span>
+    </div>
   );
 }
