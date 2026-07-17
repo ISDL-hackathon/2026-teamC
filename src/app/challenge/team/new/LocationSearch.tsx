@@ -185,8 +185,10 @@ export default function LocationSearch({
         <input
           id="location-search"
           type="text"
+          name="location"
           value={locationInput}
           placeholder="例：同志社大学 京田辺キャンパス"
+           required
           maxLength={100}
           onChange={(event) =>
             handleLocationChange(
@@ -217,8 +219,10 @@ export default function LocationSearch({
       </div>
 
       <p className={styles.locationHelpText}>
-        場所名を入力して検索し、候補を1件選択してください。
-      </p>
+  候補を選択すると地図が表示されます。
+  <br />
+  候補にない場所も、入力した内容のまま投稿できます。
+</p>
 
       {searchError && (
         <p className={styles.locationSearchError}>
@@ -257,50 +261,44 @@ export default function LocationSearch({
         </div>
       )}
 
-     {selectedPlace && (
-  <>
-    <div
-      className={
-        styles.selectedLocation
-      }
-    >
-      <p
-        className={
-          styles.selectedLocationLabel
-        }
-      >
-        選択中の場所
-      </p>
+          {selectedPlace && (
+        <>
+          <div
+            className={
+              styles.selectedLocation
+            }
+          >
+            <p
+              className={
+                styles.selectedLocationLabel
+              }
+            >
+              選択中の場所
+            </p>
 
-      <strong>
-        {selectedPlace.name}
-      </strong>
+            <strong>
+              {selectedPlace.name}
+            </strong>
 
-      <span>
-        {selectedPlace.address}
-      </span>
-    </div>
+            <span>
+              {selectedPlace.address}
+            </span>
+          </div>
 
-    <div className={styles.mapPreview}>
-      <EventMap
-        latitude={
-          selectedPlace.latitude
-        }
-        longitude={
-          selectedPlace.longitude
-        }
-      />
-    </div>
-  </>
-)}
-
-      <input
-        type="hidden"
-        name="location"
-        value={
-          selectedPlace?.name ?? ""
-        }
-      />
+          <div
+            className={styles.mapPreview}
+          >
+            <EventMap
+              latitude={
+                selectedPlace.latitude
+              }
+              longitude={
+                selectedPlace.longitude
+              }
+            />
+          </div>
+        </>
+      )}
 
       <input
         type="hidden"
