@@ -24,6 +24,7 @@ type DeleteAccountResult = {
 type ProfileSettingsResult = {
   data?: {
     nickname: string;
+    realName: string;
     selectedIcon: string;
     avatarUrl: string | null;
     noticeEnabled: boolean;
@@ -70,6 +71,7 @@ Promise<ProfileSettingsResult> {
     .from("profiles")
     .select(`
       nickname,
+      real_name,
       selected_icon,
       avatar_url,
       notice_enabled,
@@ -118,6 +120,8 @@ Promise<ProfileSettingsResult> {
     data: {
       nickname:
         data.nickname ?? "",
+      realName:
+        data.real_name ?? "",
       selectedIcon:
         data.selected_icon ??
         DEFAULT_SETTING_ICONS[0],
@@ -140,6 +144,7 @@ Promise<ProfileSettingsResult> {
 
 export async function saveProfileSettings(
   nickname: string,
+  realName: string,
   selectedIcon: string,
   noticeEnabled: boolean,
   challengeNoticeEnabled: boolean,
@@ -163,6 +168,9 @@ export async function saveProfileSettings(
   const trimmedNickname =
     nickname.trim();
 
+  const trimmedRealName =
+    realName.trim();
+
   const trimmedFavoriteSubject =
     favoriteSubject.trim();
 
@@ -182,6 +190,22 @@ export async function saveProfileSettings(
     return {
       error:
         "ニックネームは12文字以内で入力してください。",
+    };
+  }
+
+  if (!trimmedRealName) {
+    return {
+      error:
+        "本名を入力してください。",
+    };
+  }
+
+  if (
+    trimmedRealName.length > 30
+  ) {
+    return {
+      error:
+        "本名は30文字以内で入力してください。",
     };
   }
 
@@ -218,6 +242,8 @@ export async function saveProfileSettings(
   const profileUpdates = {
     nickname:
       trimmedNickname,
+    real_name:
+      trimmedRealName,
     notice_enabled:
       noticeEnabled,
     challenge_notice_enabled:
@@ -267,7 +293,8 @@ export async function saveProfileSettings(
     .from("mission_profiles")
     .upsert(
       {
-        user_id: user.id,
+        user_id:
+          user.id,
         favorite_subject:
           trimmedFavoriteSubject,
         favorite_color:
@@ -276,7 +303,8 @@ export async function saveProfileSettings(
           new Date().toISOString(),
       },
       {
-        onConflict: "user_id",
+        onConflict:
+          "user_id",
       },
     );
 
@@ -377,8 +405,11 @@ export async function saveAvatarImage(
     };
   }
 
-  const contentType = match[1];
-  const base64Data = match[2];
+  const contentType =
+    match[1];
+
+  const base64Data =
+    match[2];
 
   const imageBuffer =
     Buffer.from(
@@ -439,7 +470,9 @@ export async function saveAvatarImage(
     data: publicUrlData,
   } = supabase.storage
     .from("avatars")
-    .getPublicUrl(filePath);
+    .getPublicUrl(
+      filePath,
+    );
 
   const avatarUrl =
     `${publicUrlData.publicUrl}?t=${Date.now()}`;
@@ -470,7 +503,9 @@ export async function saveAvatarImage(
 
     await supabase.storage
       .from("avatars")
-      .remove([filePath]);
+      .remove([
+        filePath,
+      ]);
 
     return {
       error:
@@ -541,7 +576,9 @@ Promise<DeleteAccountResult> {
   } =
     await adminSupabase
       .auth.admin
-      .deleteUser(user.id);
+      .deleteUser(
+        user.id,
+      );
 
   if (deleteError) {
     console.error(
