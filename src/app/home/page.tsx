@@ -214,31 +214,60 @@ export default async function HomePage() {
   /**
    * 今月の自分のチェックイン回数を取得
    */
-  const {
-    count: monthlyCheckInCount,
-    error: monthlyCheckInError,
-  } = await supabase
-    .from("attendance_records")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
-    .eq("user_id", user.id)
-    .gte(
-      "entered_at",
-      `${startDate}T00:00:00+09:00`,
-    )
-    .lt(
-      "entered_at",
-      `${endDate}T00:00:00+09:00`,
-    );
+  /**
+ * 今月チェックインした日数を取得
+ *
+ * 同じ日に複数回入室していても、
+ * 進捗は1日分だけ増えるようにする
+ */
+const {
+  data: monthlyCheckInRecords,
+  error: monthlyCheckInError,
+} = await supabase
+  .from("attendance_records")
+  .select("entered_at")
+  .eq("user_id", user.id)
+  .gte(
+    "entered_at",
+    `${startDate}T00:00:00+09:00`,
+  )
+  .lt(
+    "entered_at",
+    `${endDate}T00:00:00+09:00`,
+  );
 
-  if (monthlyCheckInError) {
-    console.error(
-      "今月のチェックイン回数取得エラー:",
-      monthlyCheckInError,
-    );
-  }
+if (monthlyCheckInError) {
+  console.error(
+    "今月のチェックイン記録取得エラー:",
+    monthlyCheckInError,
+  );
+}
+
+/**
+ * 入室日時を日本時間の日付に変換し、
+ * 同じ日付の重複を取り除く
+ */
+const monthlyCheckInDateKeys =
+  new Set(
+    (monthlyCheckInRecords ?? []).map(
+      (record) =>
+        new Intl.DateTimeFormat(
+          "en-CA",
+          {
+            timeZone: "Asia/Tokyo",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          },
+        ).format(
+          new Date(record.entered_at),
+        ),
+    ),
+  );
+
+const monthlyCheckInDayCount =
+  monthlyCheckInDateKeys.size;
+   
 
   /**
    * 今日のクイズに回答済みか確認
@@ -340,8 +369,8 @@ export default async function HomePage() {
         Boolean(todayQuizAttempt)
       }
       checkInCount={
-        monthlyCheckInCount ?? 0
-      }
+  monthlyCheckInDayCount
+}
       quizStampCount={
         quizStampCount
       }
