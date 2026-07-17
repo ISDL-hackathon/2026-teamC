@@ -81,6 +81,9 @@ export default function SettingsPage() {
   const [nickname, setNickname] =
     useState("");
 
+  const [realName, setRealName] =
+    useState("");
+
   const [favoriteSubject, setFavoriteSubject] =
     useState("");
 
@@ -172,6 +175,10 @@ export default function SettingsPage() {
 
         setNickname(
           result.data.nickname,
+        );
+
+        setRealName(
+          result.data.realName,
         );
 
         if (result.data.avatarUrl) {
@@ -556,6 +563,7 @@ startSaveTransition(
         const result =
           await saveProfileSettings(
             nickname,
+            realName,
             avatar,
             notifications.notice,
             notifications.challenge,
@@ -572,6 +580,10 @@ startSaveTransition(
 
         setNickname(
           nickname.trim(),
+        );
+
+        setRealName(
+          realName.trim(),
         );
 
         setFavoriteSubject(
@@ -937,6 +949,42 @@ startSaveTransition(
 
             <p className={styles.helpText}>
               研究室のメンバーに表示される名前です
+            </p>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.formBlock}>
+            <label
+              className={styles.inputLabel}
+              htmlFor="real-name"
+            >
+              本名
+            </label>
+
+            <div className={styles.inputWrap}>
+              <input
+                id="real-name"
+                value={realName}
+                maxLength={30}
+                onChange={(event) => {
+                  setRealName(
+                    event.target.value,
+                  );
+                  setIsSaved(false);
+                  setSaveError("");
+                }}
+                placeholder="例：山田 太郎"
+                autoComplete="name"
+              />
+
+              <span>
+                {realName.length} / 30
+              </span>
+            </div>
+
+            <p className={styles.helpText}>
+              研究室メンバーの確認に使用される本名です
             </p>
           </div>
 
