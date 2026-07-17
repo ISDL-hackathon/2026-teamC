@@ -52,6 +52,22 @@ function getJapanMonthRange() {
   };
 }
 
+function getJapanDateString(
+  dateString: string,
+): string {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    },
+  ).format(
+    new Date(dateString),
+  );
+}
+
 export default async function PointPage() {
   const supabase = await createClient();
 
@@ -71,17 +87,17 @@ export default async function PointPage() {
   } = getJapanMonthRange();
 
   const {
-    count,
+    data: attendanceRecords,
     error: attendanceError,
   } = await supabase
     .from("attendance_records")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
+    .select("entered_at")
     .eq("user_id", user.id)
     .gte("entered_at", startDate)
-    .lt("entered_at", endDate);
+    .lt("entered_at", endDate)
+    .order("entered_at", {
+      ascending: true,
+    });
 
   if (attendanceError) {
     console.error(
@@ -90,7 +106,21 @@ export default async function PointPage() {
     );
   }
 
-  const visitCount = count ?? 0;
+  /*
+   * 同じ日の入室記録は何件あっても、
+   * スタンプ数としては1回だけ数える。
+   */
+  const visitedDates = new Set(
+    (attendanceRecords ?? []).map(
+      (record) =>
+        getJapanDateString(
+          record.entered_at,
+        ),
+    ),
+  );
+
+  const visitCount =
+    visitedDates.size;
 
   const stampCount = Math.min(
     visitCount,
@@ -124,7 +154,7 @@ export default async function PointPage() {
         <p className={styles.centerText}>
           今月は{" "}
           <span className={styles.redText}>
-            {visitCount}回
+            {visitCount}日
           </span>
           研究室に来ています
         </p>
@@ -175,7 +205,7 @@ export default async function PointPage() {
         </div>
 
         <p className={styles.note}>
-          研究室に来るたびにスタンプが1つたまります
+          1日に1回、来室スタンプがたまります
         </p>
       </section>
 
@@ -188,7 +218,7 @@ export default async function PointPage() {
 
         <div className={styles.grow}>
           <h3 className={styles.goalTitle}>
-            15回達成を目指そう！
+            15日達成を目指そう！
           </h3>
 
           <div
@@ -215,12 +245,12 @@ export default async function PointPage() {
                 styles.redText
               }
             >
-              {stampCount}回
+              {stampCount}日
             </span>
 
             <span>
               {" "}
-              / {MAX_STAMP_COUNT}回
+              / {MAX_STAMP_COUNT}日
             </span>
           </p>
         </div>
