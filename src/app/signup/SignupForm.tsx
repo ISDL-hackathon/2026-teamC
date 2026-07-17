@@ -362,7 +362,7 @@ export default function SignupForm() {
             }
           >
             入力した内容は、研究室メンバーを知るための
-            「先輩クイズ」に使用されます。
+            「クイズ」に使用されます。
           </p>
 
           <div
@@ -418,7 +418,7 @@ export default function SignupForm() {
                 styles.helpText
               }
             >
-              先輩クイズの問題に使用されます
+              クイズの問題に使用されます
             </p>
           </div>
 
@@ -473,7 +473,7 @@ export default function SignupForm() {
                 styles.helpText
               }
             >
-              先輩クイズの問題に使用されます
+              クイズの問題に使用されます
             </p>
           </div>
         </div>
