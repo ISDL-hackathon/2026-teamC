@@ -29,8 +29,9 @@ type ProfileSettingsResult = {
     avatarUrl: string | null;
     noticeEnabled: boolean;
     challengeNoticeEnabled: boolean;
-    favoriteSubject: string;
-    favoriteColor: string;
+    highSchoolClub: string;
+    studentGoal: string;
+    bestPurchase: string;
   };
   error?: string;
 };
@@ -98,8 +99,9 @@ Promise<ProfileSettingsResult> {
   } = await supabase
     .from("mission_profiles")
     .select(`
-      favorite_subject,
-      favorite_color
+      high_school_club,
+      student_goal,
+      best_purchase
     `)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -132,12 +134,15 @@ Promise<ProfileSettingsResult> {
       challengeNoticeEnabled:
         data.challenge_notice_enabled ??
         true,
-      favoriteSubject:
+      highSchoolClub:
         missionProfile
-          ?.favorite_subject ?? "",
-      favoriteColor:
+          ?.high_school_club ?? "",
+      studentGoal:
         missionProfile
-          ?.favorite_color ?? "",
+          ?.student_goal ?? "",
+      bestPurchase:
+        missionProfile
+          ?.best_purchase ?? "",
     },
   };
 }
@@ -148,8 +153,9 @@ export async function saveProfileSettings(
   selectedIcon: string,
   noticeEnabled: boolean,
   challengeNoticeEnabled: boolean,
-  favoriteSubject: string,
-  favoriteColor: string,
+  highSchoolClub: string,
+  studentGoal: string,
+  bestPurchase: string,
 ): Promise<SaveProfileSettingsResult> {
   const supabase = await createClient();
 
@@ -171,11 +177,14 @@ export async function saveProfileSettings(
   const trimmedRealName =
     realName.trim();
 
-  const trimmedFavoriteSubject =
-    favoriteSubject.trim();
+  const trimmedHighSchoolClub =
+    highSchoolClub.trim();
 
-  const trimmedFavoriteColor =
-    favoriteColor.trim();
+  const trimmedStudentGoal =
+    studentGoal.trim();
+
+  const trimmedBestPurchase =
+    bestPurchase.trim();
 
   if (!trimmedNickname) {
     return {
@@ -209,17 +218,35 @@ export async function saveProfileSettings(
     };
   }
 
-  if (!trimmedFavoriteSubject) {
+  if (!trimmedHighSchoolClub) {
     return {
       error:
-        "好きな教科を入力してください。",
+        "高校の頃の部活を入力してください。",
     };
   }
 
-  if (!trimmedFavoriteColor) {
+  if (!trimmedStudentGoal) {
     return {
       error:
-        "好きな色を入力してください。",
+        "学生のうちにやりたいことを入力してください。",
+    };
+  }
+
+  if (!trimmedBestPurchase) {
+    return {
+      error:
+        "買って良かったものを入力してください。",
+    };
+  }
+
+  if (
+    trimmedHighSchoolClub.length > 30 ||
+    trimmedStudentGoal.length > 50 ||
+    trimmedBestPurchase.length > 50
+  ) {
+    return {
+      error:
+        "クイズ用プロフィールの文字数を確認してください。",
     };
   }
 
@@ -295,10 +322,12 @@ export async function saveProfileSettings(
       {
         user_id:
           user.id,
-        favorite_subject:
-          trimmedFavoriteSubject,
-        favorite_color:
-          trimmedFavoriteColor,
+        high_school_club:
+          trimmedHighSchoolClub,
+        student_goal:
+          trimmedStudentGoal,
+        best_purchase:
+          trimmedBestPurchase,
         updated_at:
           new Date().toISOString(),
       },

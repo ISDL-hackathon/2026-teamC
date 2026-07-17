@@ -12,8 +12,9 @@ type SignupInput = {
   email: string;
   password: string;
   passwordConfirm: string;
-  favoriteSubject: string;
-  favoriteColor: string;
+  highSchoolClub: string;
+  studentGoal: string;
+  bestPurchase: string;
 };
 
 export async function signup(
@@ -25,11 +26,14 @@ export async function signup(
   const trimmedEmail =
     input.email.trim();
 
-  const trimmedFavoriteSubject =
-    input.favoriteSubject.trim();
+  const trimmedHighSchoolClub =
+    input.highSchoolClub.trim();
 
-  const trimmedFavoriteColor =
-    input.favoriteColor.trim();
+  const trimmedStudentGoal =
+    input.studentGoal.trim();
+
+  const trimmedBestPurchase =
+    input.bestPurchase.trim();
 
   if (!trimmedRealName) {
     return {
@@ -62,28 +66,35 @@ export async function signup(
     };
   }
 
-  if (!trimmedFavoriteSubject) {
+  if (!trimmedHighSchoolClub) {
     return {
       error:
-        "好きな教科を入力してください。",
+        "高校の頃の部活を入力してください。",
     };
   }
 
-  if (!trimmedFavoriteColor) {
+  if (!trimmedStudentGoal) {
     return {
       error:
-        "好きな色を入力してください。",
+        "学生のうちにやりたいことを入力してください。",
+    };
+  }
+
+  if (!trimmedBestPurchase) {
+    return {
+      error:
+        "買って良かったものを入力してください。",
     };
   }
 
   if (
-    trimmedFavoriteSubject.length >
-      20 ||
-    trimmedFavoriteColor.length > 20
+    trimmedHighSchoolClub.length > 30 ||
+    trimmedStudentGoal.length > 50 ||
+    trimmedBestPurchase.length > 50
   ) {
     return {
       error:
-        "好きな教科と好きな色は20文字以内で入力してください。",
+        "クイズ用プロフィールの文字数を確認してください。",
     };
   }
 
@@ -105,10 +116,12 @@ export async function signup(
         data: {
           real_name:
             trimmedRealName,
-          favorite_subject:
-            trimmedFavoriteSubject,
-          favorite_color:
-            trimmedFavoriteColor,
+          high_school_club:
+            trimmedHighSchoolClub,
+          student_goal:
+            trimmedStudentGoal,
+          best_purchase:
+            trimmedBestPurchase,
         },
       },
     });

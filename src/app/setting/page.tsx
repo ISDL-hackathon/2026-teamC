@@ -84,10 +84,13 @@ export default function SettingsPage() {
   const [realName, setRealName] =
     useState("");
 
-  const [favoriteSubject, setFavoriteSubject] =
+  const [highSchoolClub, setHighSchoolClub] =
     useState("");
 
-  const [favoriteColor, setFavoriteColor] =
+  const [studentGoal, setStudentGoal] =
+    useState("");
+
+  const [bestPurchase, setBestPurchase] =
     useState("");
 
   const [avatar, setAvatar] = useState(
@@ -200,12 +203,16 @@ export default function SettingsPage() {
               .challengeNoticeEnabled,
         });
 
-        setFavoriteSubject(
-          result.data.favoriteSubject,
+        setHighSchoolClub(
+          result.data.highSchoolClub,
         );
 
-        setFavoriteColor(
-          result.data.favoriteColor,
+        setStudentGoal(
+          result.data.studentGoal,
+        );
+
+        setBestPurchase(
+          result.data.bestPurchase,
         );
 
         setIsLoaded(true);
@@ -567,8 +574,9 @@ startSaveTransition(
             avatar,
             notifications.notice,
             notifications.challenge,
-            favoriteSubject,
-            favoriteColor,
+            highSchoolClub,
+            studentGoal,
+            bestPurchase,
           );
 
         if (result.error) {
@@ -586,12 +594,16 @@ startSaveTransition(
           realName.trim(),
         );
 
-        setFavoriteSubject(
-          favoriteSubject.trim(),
+        setHighSchoolClub(
+          highSchoolClub.trim(),
         );
 
-        setFavoriteColor(
-          favoriteColor.trim(),
+        setStudentGoal(
+          studentGoal.trim(),
+        );
+
+        setBestPurchase(
+          bestPurchase.trim(),
         );
 
         setIsSaved(true);
@@ -993,28 +1005,28 @@ startSaveTransition(
           <div className={styles.formBlock}>
             <label
               className={styles.inputLabel}
-              htmlFor="favorite-subject"
+              htmlFor="high-school-club"
             >
-              好きな教科
+              高校の頃の部活
             </label>
 
             <div className={styles.inputWrap}>
               <input
-                id="favorite-subject"
-                value={favoriteSubject}
-                maxLength={20}
+                id="high-school-club"
+                value={highSchoolClub}
+                maxLength={30}
                 onChange={(event) => {
-                  setFavoriteSubject(
+                  setHighSchoolClub(
                     event.target.value,
                   );
                   setIsSaved(false);
                   setSaveError("");
                 }}
-                placeholder="例：数学"
+                placeholder="例：ギターマンドリン部"
               />
 
               <span>
-                {favoriteSubject.length} / 20
+                {highSchoolClub.length} / 30
               </span>
             </div>
 
@@ -1028,28 +1040,63 @@ startSaveTransition(
           <div className={styles.formBlock}>
             <label
               className={styles.inputLabel}
-              htmlFor="favorite-color"
+              htmlFor="student-goal"
             >
-              好きな色
+              学生のうちにやりたいこと
             </label>
 
             <div className={styles.inputWrap}>
               <input
-                id="favorite-color"
-                value={favoriteColor}
-                maxLength={20}
+                id="student-goal"
+                value={studentGoal}
+                maxLength={50}
                 onChange={(event) => {
-                  setFavoriteColor(
+                  setStudentGoal(
                     event.target.value,
                   );
                   setIsSaved(false);
                   setSaveError("");
                 }}
-                placeholder="例：青"
+                placeholder="例：海外旅行に行く"
               />
 
               <span>
-                {favoriteColor.length} / 20
+                {studentGoal.length} / 50
+              </span>
+            </div>
+
+            <p className={styles.helpText}>
+              クイズの問題に使用されます
+            </p>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.formBlock}>
+            <label
+              className={styles.inputLabel}
+              htmlFor="best-purchase"
+            >
+              買って良かったもの
+            </label>
+
+            <div className={styles.inputWrap}>
+              <input
+                id="best-purchase"
+                value={bestPurchase}
+                maxLength={50}
+                onChange={(event) => {
+                  setBestPurchase(
+                    event.target.value,
+                  );
+                  setIsSaved(false);
+                  setSaveError("");
+                }}
+                placeholder="例：ワイヤレスイヤホン"
+              />
+
+              <span>
+                {bestPurchase.length} / 50
               </span>
             </div>
 
