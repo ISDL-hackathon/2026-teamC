@@ -193,13 +193,15 @@ const locationLongitudeValue = String(
   formData.get("location_longitude") ?? "",
 ).trim();
 
-const locationLatitude = Number(
-  locationLatitudeValue,
-);
+const locationLatitude =
+  locationLatitudeValue === ""
+    ? null
+    : Number(locationLatitudeValue);
 
-const locationLongitude = Number(
-  locationLongitudeValue,
-);
+const locationLongitude =
+  locationLongitudeValue === ""
+    ? null
+    : Number(locationLongitudeValue);
 
 
   const eventAtValue = String(
@@ -237,29 +239,47 @@ const locationLongitude = Number(
     );
   }
 
-  if (
-  !location ||
-  !locationAddress ||
-  !locationPlaceId ||
-  !locationLatitudeValue ||
-  !locationLongitudeValue
-) {
+  if (!location) {
   redirectWithError(
-    "検索結果から開催場所を選択してください。",
+    "開催場所を入力してください。",
     formValues,
   );
 }
 
 if (
-  !Number.isFinite(locationLatitude) ||
-  locationLatitude < -90 ||
-  locationLatitude > 90 ||
-  !Number.isFinite(locationLongitude) ||
-  locationLongitude < -180 ||
-  locationLongitude > 180
+  (locationLatitude === null) !==
+  (locationLongitude === null)
 ) {
   redirectWithError(
     "開催場所の位置情報が正しくありません。場所を検索し直してください。",
+    formValues,
+  );
+}
+
+if (
+  locationLatitude !== null &&
+  (
+    !Number.isFinite(locationLatitude) ||
+    locationLatitude < -90 ||
+    locationLatitude > 90
+  )
+) {
+  redirectWithError(
+    "開催場所の緯度が正しくありません。場所を検索し直してください。",
+    formValues,
+  );
+}
+
+if (
+  locationLongitude !== null &&
+  (
+    !Number.isFinite(locationLongitude) ||
+    locationLongitude < -180 ||
+    locationLongitude > 180
+  )
+) {
+  redirectWithError(
+    "開催場所の経度が正しくありません。場所を検索し直してください。",
     formValues,
   );
 }
@@ -365,14 +385,14 @@ if (
   comment: comment || null,
 
   location,
-  location_address:
-    locationAddress,
-  location_place_id:
-    locationPlaceId,
-  location_latitude:
-    locationLatitude,
-  location_longitude:
-    locationLongitude,
+location_address:
+  locationAddress || null,
+location_place_id:
+  locationPlaceId || null,
+location_latitude:
+  locationLatitude,
+location_longitude:
+  locationLongitude,
 
   event_at:
     eventAt.toISOString(),
