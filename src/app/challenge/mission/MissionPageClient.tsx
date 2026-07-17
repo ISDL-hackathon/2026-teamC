@@ -608,7 +608,7 @@ export default function MissionPageClient({
                 styles.mainTitle
               }
             >
-              今日の先輩クイズ
+              今日のクイズ
             </h2>
           </div>
 
