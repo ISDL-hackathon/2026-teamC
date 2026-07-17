@@ -5,8 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 const TOTAL_STAMP_COUNT = 10;
 
 type QuestionType =
-  | "favorite_subject"
-  | "favorite_color";
+  | "high_school_club"
+  | "student_goal"
+  | "best_purchase";
 
 type MissionQuiz = {
   targetUserId: string;
@@ -61,8 +62,9 @@ type SubmitMissionAnswerResult = {
 
 type MissionProfileRow = {
   user_id: string;
-  favorite_subject: string;
-  favorite_color: string;
+  high_school_club: string;
+  student_goal: string;
+  best_purchase: string;
 };
 
 type ProfileRow = {
@@ -232,30 +234,67 @@ function getFallbackOptions(
 ) {
   if (
     questionType ===
-    "favorite_subject"
+    "high_school_club"
   ) {
     return [
-      "数学",
-      "英語",
-      "国語",
-      "体育",
-      "理科",
-      "社会",
-      "情報",
-      "音楽",
+      "吹奏楽部",
+      "バスケットボール部",
+      "サッカー部",
+      "美術部",
+      "軽音楽部",
+      "テニス部",
+      "帰宅部",
+      "生徒会",
+    ];
+  }
+
+  if (
+    questionType ===
+    "student_goal"
+  ) {
+    return [
+      "海外旅行に行く",
+      "資格を取る",
+      "一人暮らしをする",
+      "長期インターンに参加する",
+      "日本一周をする",
+      "新しい趣味を始める",
+      "語学を身につける",
+      "学生イベントを企画する",
     ];
   }
 
   return [
-    "赤",
-    "青",
-    "緑",
-    "黒",
-    "白",
-    "黄色",
-    "紫",
-    "ピンク",
+    "ワイヤレスイヤホン",
+    "ノートパソコン",
+    "タブレット",
+    "電動歯ブラシ",
+    "スマートウォッチ",
+    "良い枕",
+    "コーヒーメーカー",
+    "モバイルバッテリー",
   ];
+}
+
+function getAnswerByQuestionType(
+  profile: MissionProfileRow,
+  questionType: QuestionType,
+) {
+  if (
+    questionType ===
+    "high_school_club"
+  ) {
+    return profile.high_school_club;
+  }
+
+  if (
+    questionType ===
+    "student_goal"
+  ) {
+    return profile.student_goal;
+  }
+
+  return profile.best_purchase;
 }
 
 function getQuestionText(
@@ -264,15 +303,23 @@ function getQuestionText(
 ) {
   if (
     questionType ===
-    "favorite_subject"
+    "high_school_club"
   ) {
-    return `${nickname}の好きな教科は？`;
+    return `${nickname}が高校の頃に所属していた部活は？`;
   }
 
-  return `${nickname}の好きな色は？`;
+  if (
+    questionType ===
+    "student_goal"
+  ) {
+    return `${nickname}が学生のうちにやりたいことは？`;
+  }
+
+  return `${nickname}が買って良かったものは？`;
 }
 
 function getProfileIcon(
+
   profile:
     | ProfileRow
     | undefined,
@@ -326,56 +373,84 @@ function createQuizOptions(
   seedText: string,
 ) {
   const correctAnswer =
-    questionType ===
-      "favorite_subject"
-      ? targetProfile
-        .favorite_subject
-      : targetProfile
-        .favorite_color;
-
-  const answersFromMembers =
-    missionProfiles.map(
-      (profile) =>
-        questionType ===
-          "favorite_subject"
-          ? profile
-            .favorite_subject
-          : profile
-            .favorite_color,
-    );
-
-  const candidateOptions = [
-    ...answersFromMembers,
-    ...getFallbackOptions(
+    getAnswerByQuestionType(
+      targetProfile,
       questionType,
-    ),
-  ]
-    .map((option) =>
-      option.trim(),
-    )
-    .filter(Boolean);
+    ).trim();
 
-  const uniqueOptions =
+  const answersFromOtherMembers =
+    missionProfiles
+      .filter(
+        (profile) =>
+          profile.user_id !==
+          targetProfile.user_id,
+      )
+      .map((profile) =>
+        getAnswerByQuestionType(
+          profile,
+          questionType,
+        ).trim(),
+      )
+      .filter(
+        (answer) =>
+          Boolean(answer) &&
+          answer !== correctAnswer,
+      );
+
+  const uniqueMemberAnswers =
     Array.from(
-      new Set(candidateOptions),
-    ).filter(
-      (option) =>
-        option !==
-        correctAnswer,
+      new Set(
+        answersFromOtherMembers,
+      ),
     );
 
-  const shuffledWrongOptions =
+  const shuffledMemberAnswers =
     shuffleWithSeed(
-      uniqueOptions,
-      `${seedText}-wrong-options`,
+      uniqueMemberAnswers,
+      `${seedText}-member-options`,
     );
+
+  const wrongOptions =
+    shuffledMemberAnswers.slice(
+      0,
+      3,
+    );
+
+  if (wrongOptions.length < 3) {
+    const fallbackCandidates =
+      getFallbackOptions(
+        questionType,
+      )
+        .map((option) =>
+          option.trim(),
+        )
+        .filter(
+          (option) =>
+            Boolean(option) &&
+            option !==
+            correctAnswer &&
+            !wrongOptions.includes(
+              option,
+            ),
+        );
+
+    const shuffledFallbacks =
+      shuffleWithSeed(
+        fallbackCandidates,
+        `${seedText}-fallback-options`,
+      );
+
+    wrongOptions.push(
+      ...shuffledFallbacks.slice(
+        0,
+        3 - wrongOptions.length,
+      ),
+    );
+  }
 
   const options = [
     correctAnswer,
-    ...shuffledWrongOptions.slice(
-      0,
-      3,
-    ),
+    ...wrongOptions,
   ];
 
   return shuffleWithSeed(
@@ -533,8 +608,9 @@ export async function getMissionPageData():
     .from("mission_profiles")
     .select(`
       user_id,
-      favorite_subject,
-      favorite_color
+      high_school_club,
+      student_goal,
+      best_purchase
     `)
     .neq(
       "user_id",
@@ -565,8 +641,33 @@ export async function getMissionPageData():
   }
 
   const typedMissionProfiles =
-    missionProfiles as
-    MissionProfileRow[];
+    (
+      missionProfiles as
+      MissionProfileRow[]
+    ).filter(
+      (profile) =>
+        Boolean(
+          profile.high_school_club
+            ?.trim(),
+        ) &&
+        Boolean(
+          profile.student_goal
+            ?.trim(),
+        ) &&
+        Boolean(
+          profile.best_purchase
+            ?.trim(),
+        ),
+    );
+
+  if (
+    typedMissionProfiles.length === 0
+  ) {
+    return {
+      error:
+        "クイズ用プロフィールを登録したメンバーがまだいません。",
+    };
+  }
 
   /*
    * 今日の回答履歴を確認
@@ -643,10 +744,18 @@ export async function getMissionPageData():
         `${user.id}-${todayKey}-question`,
       );
 
+    const questionTypes:
+      QuestionType[] = [
+        "high_school_club",
+        "student_goal",
+        "best_purchase",
+      ];
+
     questionType =
-      questionSeed % 2 === 0
-        ? "favorite_subject"
-        : "favorite_color";
+      questionTypes[
+      questionSeed %
+      questionTypes.length
+      ];
   }
 
   if (!targetProfile) {
@@ -708,12 +817,10 @@ export async function getMissionPageData():
     "研究室メンバー";
 
   const correctAnswer =
-    questionType ===
-      "favorite_subject"
-      ? targetProfile
-        .favorite_subject
-      : targetProfile
-        .favorite_color;
+    getAnswerByQuestionType(
+      targetProfile,
+      questionType,
+    );
 
   const options =
     createQuizOptions(
@@ -833,9 +940,11 @@ export async function submitMissionAnswer(
 
   if (
     questionType !==
-    "favorite_subject" &&
+    "high_school_club" &&
     questionType !==
-    "favorite_color"
+    "student_goal" &&
+    questionType !==
+    "best_purchase"
   ) {
     return {
       error:
@@ -894,14 +1003,15 @@ export async function submitMissionAnswer(
    */
   const {
     data: targetProfile,
-    error:
-    targetProfileError,
+    error: targetProfileError,
   } = await supabase
     .from("mission_profiles")
     .select(`
-      favorite_subject,
-      favorite_color
-    `)
+    user_id,
+    high_school_club,
+    student_goal,
+    best_purchase
+  `)
     .eq(
       "user_id",
       targetUserId,
@@ -924,12 +1034,10 @@ export async function submitMissionAnswer(
   }
 
   const correctAnswer =
-    questionType ===
-      "favorite_subject"
-      ? targetProfile
-        .favorite_subject
-      : targetProfile
-        .favorite_color;
+    getAnswerByQuestionType(
+      targetProfile,
+      questionType,
+    );
 
   const isCorrect =
     selectedAnswer.trim() ===
