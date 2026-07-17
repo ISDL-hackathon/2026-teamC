@@ -25,8 +25,9 @@ import AlpacaIncorrectEffect from "./effect/alpaca/AlpacaIncorrectEffect";
 import styles from "./page.module.css";
 
 type QuestionType =
-  | "favorite_subject"
-  | "favorite_color";
+  | "high_school_club"
+  | "student_goal"
+  | "best_purchase";
 
 type EffectAnimal =
   | "gorilla"

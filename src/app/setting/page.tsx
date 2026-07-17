@@ -81,10 +81,16 @@ export default function SettingsPage() {
   const [nickname, setNickname] =
     useState("");
 
-  const [favoriteSubject, setFavoriteSubject] =
+  const [realName, setRealName] =
     useState("");
 
-  const [favoriteColor, setFavoriteColor] =
+  const [highSchoolClub, setHighSchoolClub] =
+    useState("");
+
+  const [studentGoal, setStudentGoal] =
+    useState("");
+
+  const [bestPurchase, setBestPurchase] =
     useState("");
 
   const [avatar, setAvatar] = useState(
@@ -174,6 +180,10 @@ export default function SettingsPage() {
           result.data.nickname,
         );
 
+        setRealName(
+          result.data.realName,
+        );
+
         if (result.data.avatarUrl) {
           setAvatar(
             result.data.avatarUrl,
@@ -193,12 +203,16 @@ export default function SettingsPage() {
               .challengeNoticeEnabled,
         });
 
-        setFavoriteSubject(
-          result.data.favoriteSubject,
+        setHighSchoolClub(
+          result.data.highSchoolClub,
         );
 
-        setFavoriteColor(
-          result.data.favoriteColor,
+        setStudentGoal(
+          result.data.studentGoal,
+        );
+
+        setBestPurchase(
+          result.data.bestPurchase,
         );
 
         setIsLoaded(true);
@@ -556,11 +570,13 @@ startSaveTransition(
         const result =
           await saveProfileSettings(
             nickname,
+            realName,
             avatar,
             notifications.notice,
             notifications.challenge,
-            favoriteSubject,
-            favoriteColor,
+            highSchoolClub,
+            studentGoal,
+            bestPurchase,
           );
 
         if (result.error) {
@@ -574,12 +590,20 @@ startSaveTransition(
           nickname.trim(),
         );
 
-        setFavoriteSubject(
-          favoriteSubject.trim(),
+        setRealName(
+          realName.trim(),
         );
 
-        setFavoriteColor(
-          favoriteColor.trim(),
+        setHighSchoolClub(
+          highSchoolClub.trim(),
+        );
+
+        setStudentGoal(
+          studentGoal.trim(),
+        );
+
+        setBestPurchase(
+          bestPurchase.trim(),
         );
 
         setIsSaved(true);
@@ -945,28 +969,64 @@ startSaveTransition(
           <div className={styles.formBlock}>
             <label
               className={styles.inputLabel}
-              htmlFor="favorite-subject"
+              htmlFor="real-name"
             >
-              好きな教科
+              本名
             </label>
 
             <div className={styles.inputWrap}>
               <input
-                id="favorite-subject"
-                value={favoriteSubject}
-                maxLength={20}
+                id="real-name"
+                value={realName}
+                maxLength={30}
                 onChange={(event) => {
-                  setFavoriteSubject(
+                  setRealName(
                     event.target.value,
                   );
                   setIsSaved(false);
                   setSaveError("");
                 }}
-                placeholder="例：数学"
+                placeholder="例：山田 太郎"
+                autoComplete="name"
               />
 
               <span>
-                {favoriteSubject.length} / 20
+                {realName.length} / 30
+              </span>
+            </div>
+
+            <p className={styles.helpText}>
+              研究室メンバーの確認に使用される本名です
+            </p>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.formBlock}>
+            <label
+              className={styles.inputLabel}
+              htmlFor="high-school-club"
+            >
+              高校の頃の部活
+            </label>
+
+            <div className={styles.inputWrap}>
+              <input
+                id="high-school-club"
+                value={highSchoolClub}
+                maxLength={30}
+                onChange={(event) => {
+                  setHighSchoolClub(
+                    event.target.value,
+                  );
+                  setIsSaved(false);
+                  setSaveError("");
+                }}
+                placeholder="例：ギターマンドリン部"
+              />
+
+              <span>
+                {highSchoolClub.length} / 30
               </span>
             </div>
 
@@ -980,28 +1040,63 @@ startSaveTransition(
           <div className={styles.formBlock}>
             <label
               className={styles.inputLabel}
-              htmlFor="favorite-color"
+              htmlFor="student-goal"
             >
-              好きな色
+              学生のうちにやりたいこと
             </label>
 
             <div className={styles.inputWrap}>
               <input
-                id="favorite-color"
-                value={favoriteColor}
-                maxLength={20}
+                id="student-goal"
+                value={studentGoal}
+                maxLength={50}
                 onChange={(event) => {
-                  setFavoriteColor(
+                  setStudentGoal(
                     event.target.value,
                   );
                   setIsSaved(false);
                   setSaveError("");
                 }}
-                placeholder="例：青"
+                placeholder="例：海外旅行に行く"
               />
 
               <span>
-                {favoriteColor.length} / 20
+                {studentGoal.length} / 50
+              </span>
+            </div>
+
+            <p className={styles.helpText}>
+              クイズの問題に使用されます
+            </p>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.formBlock}>
+            <label
+              className={styles.inputLabel}
+              htmlFor="best-purchase"
+            >
+              買って良かったもの
+            </label>
+
+            <div className={styles.inputWrap}>
+              <input
+                id="best-purchase"
+                value={bestPurchase}
+                maxLength={50}
+                onChange={(event) => {
+                  setBestPurchase(
+                    event.target.value,
+                  );
+                  setIsSaved(false);
+                  setSaveError("");
+                }}
+                placeholder="例：ワイヤレスイヤホン"
+              />
+
+              <span>
+                {bestPurchase.length} / 50
               </span>
             </div>
 

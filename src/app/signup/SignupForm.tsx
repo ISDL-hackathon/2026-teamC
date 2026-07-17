@@ -25,13 +25,18 @@ export default function SignupForm() {
   ] = useState("");
 
   const [
-    favoriteSubject,
-    setFavoriteSubject,
+    highSchoolClub,
+    setHighSchoolClub,
   ] = useState("");
 
   const [
-    favoriteColor,
-    setFavoriteColor,
+    studentGoal,
+    setStudentGoal,
+  ] = useState("");
+
+  const [
+    bestPurchase,
+    setBestPurchase,
   ] = useState("");
 
   const [
@@ -55,8 +60,9 @@ export default function SignupForm() {
         email,
         password,
         passwordConfirm,
-        favoriteSubject,
-        favoriteColor,
+        highSchoolClub,
+        studentGoal,
+        bestPurchase,
       });
 
       if (result?.error) {
@@ -362,19 +368,19 @@ export default function SignupForm() {
             }
           >
             入力した内容は、研究室メンバーを知るための
-            「先輩クイズ」に使用されます。
+            「クイズ」に使用されます。
           </p>
 
           <div
             className={styles.field}
           >
             <label
-              htmlFor="favoriteSubject"
+              htmlFor="highSchoolClub"
               className={
                 styles.label
               }
             >
-              好きな教科
+              高校の頃の部活
             </label>
 
             <div
@@ -388,23 +394,23 @@ export default function SignupForm() {
                 }
                 aria-hidden="true"
               >
-                📚
+                🏫
               </span>
 
               <input
-                id="favoriteSubject"
-                name="favoriteSubject"
+                id="highSchoolClub"
+                name="highSchoolClub"
                 type="text"
-                maxLength={20}
-                placeholder="例：数学"
+                maxLength={30}
+                placeholder="例：ギターマンドリン部"
                 className={
                   styles.input
                 }
                 value={
-                  favoriteSubject
+                  highSchoolClub
                 }
                 onChange={(event) =>
-                  setFavoriteSubject(
+                  setHighSchoolClub(
                     event.target
                       .value,
                   )
@@ -418,7 +424,7 @@ export default function SignupForm() {
                 styles.helpText
               }
             >
-              先輩クイズの問題に使用されます
+              高校時代に所属していた部活を入力してください
             </p>
           </div>
 
@@ -426,12 +432,12 @@ export default function SignupForm() {
             className={styles.field}
           >
             <label
-              htmlFor="favoriteColor"
+              htmlFor="studentGoal"
               className={
                 styles.label
               }
             >
-              好きな色
+              学生のうちにやりたいこと
             </label>
 
             <div
@@ -445,21 +451,21 @@ export default function SignupForm() {
                 }
                 aria-hidden="true"
               >
-                🎨
+                🎓
               </span>
 
               <input
-                id="favoriteColor"
-                name="favoriteColor"
+                id="studentGoal"
+                name="studentGoal"
                 type="text"
-                maxLength={20}
-                placeholder="例：青"
+                maxLength={50}
+                placeholder="例：海外旅行に行く"
                 className={
                   styles.input
                 }
-                value={favoriteColor}
+                value={studentGoal}
                 onChange={(event) =>
-                  setFavoriteColor(
+                  setStudentGoal(
                     event.target
                       .value,
                   )
@@ -473,7 +479,62 @@ export default function SignupForm() {
                 styles.helpText
               }
             >
-              先輩クイズの問題に使用されます
+              学生生活のうちに挑戦したいことを入力してください
+            </p>
+          </div>
+
+          <div
+            className={styles.field}
+          >
+            <label
+              htmlFor="bestPurchase"
+              className={
+                styles.label
+              }
+            >
+              買って良かったもの
+            </label>
+
+            <div
+              className={
+                styles.inputWrapper
+              }
+            >
+              <span
+                className={
+                  styles.inputIcon
+                }
+                aria-hidden="true"
+              >
+                🛍️
+              </span>
+
+              <input
+                id="bestPurchase"
+                name="bestPurchase"
+                type="text"
+                maxLength={50}
+                placeholder="例：ワイヤレスイヤホン"
+                className={
+                  styles.input
+                }
+                value={bestPurchase}
+                onChange={(event) =>
+                  setBestPurchase(
+                    event.target
+                      .value,
+                  )
+                }
+                required
+              />
+            </div>
+
+            <p
+              className={
+                styles.helpText
+              }
+            >
+              最近でなくても、買って満足したものを入力してください
             </p>
           </div>
         </div>

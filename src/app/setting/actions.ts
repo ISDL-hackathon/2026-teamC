@@ -24,12 +24,14 @@ type DeleteAccountResult = {
 type ProfileSettingsResult = {
   data?: {
     nickname: string;
+    realName: string;
     selectedIcon: string;
     avatarUrl: string | null;
     noticeEnabled: boolean;
     challengeNoticeEnabled: boolean;
-    favoriteSubject: string;
-    favoriteColor: string;
+    highSchoolClub: string;
+    studentGoal: string;
+    bestPurchase: string;
   };
   error?: string;
 };
@@ -70,6 +72,7 @@ Promise<ProfileSettingsResult> {
     .from("profiles")
     .select(`
       nickname,
+      real_name,
       selected_icon,
       avatar_url,
       notice_enabled,
@@ -96,8 +99,9 @@ Promise<ProfileSettingsResult> {
   } = await supabase
     .from("mission_profiles")
     .select(`
-      favorite_subject,
-      favorite_color
+      high_school_club,
+      student_goal,
+      best_purchase
     `)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -118,6 +122,8 @@ Promise<ProfileSettingsResult> {
     data: {
       nickname:
         data.nickname ?? "",
+      realName:
+        data.real_name ?? "",
       selectedIcon:
         data.selected_icon ??
         DEFAULT_SETTING_ICONS[0],
@@ -128,23 +134,28 @@ Promise<ProfileSettingsResult> {
       challengeNoticeEnabled:
         data.challenge_notice_enabled ??
         true,
-      favoriteSubject:
+      highSchoolClub:
         missionProfile
-          ?.favorite_subject ?? "",
-      favoriteColor:
+          ?.high_school_club ?? "",
+      studentGoal:
         missionProfile
-          ?.favorite_color ?? "",
+          ?.student_goal ?? "",
+      bestPurchase:
+        missionProfile
+          ?.best_purchase ?? "",
     },
   };
 }
 
 export async function saveProfileSettings(
   nickname: string,
+  realName: string,
   selectedIcon: string,
   noticeEnabled: boolean,
   challengeNoticeEnabled: boolean,
-  favoriteSubject: string,
-  favoriteColor: string,
+  highSchoolClub: string,
+  studentGoal: string,
+  bestPurchase: string,
 ): Promise<SaveProfileSettingsResult> {
   const supabase = await createClient();
 
@@ -163,11 +174,17 @@ export async function saveProfileSettings(
   const trimmedNickname =
     nickname.trim();
 
-  const trimmedFavoriteSubject =
-    favoriteSubject.trim();
+  const trimmedRealName =
+    realName.trim();
 
-  const trimmedFavoriteColor =
-    favoriteColor.trim();
+  const trimmedHighSchoolClub =
+    highSchoolClub.trim();
+
+  const trimmedStudentGoal =
+    studentGoal.trim();
+
+  const trimmedBestPurchase =
+    bestPurchase.trim();
 
   if (!trimmedNickname) {
     return {
@@ -185,17 +202,51 @@ export async function saveProfileSettings(
     };
   }
 
-  if (!trimmedFavoriteSubject) {
+  if (!trimmedRealName) {
     return {
       error:
-        "好きな教科を入力してください。",
+        "本名を入力してください。",
     };
   }
 
-  if (!trimmedFavoriteColor) {
+  if (
+    trimmedRealName.length > 30
+  ) {
     return {
       error:
-        "好きな色を入力してください。",
+        "本名は30文字以内で入力してください。",
+    };
+  }
+
+  if (!trimmedHighSchoolClub) {
+    return {
+      error:
+        "高校の頃の部活を入力してください。",
+    };
+  }
+
+  if (!trimmedStudentGoal) {
+    return {
+      error:
+        "学生のうちにやりたいことを入力してください。",
+    };
+  }
+
+  if (!trimmedBestPurchase) {
+    return {
+      error:
+        "買って良かったものを入力してください。",
+    };
+  }
+
+  if (
+    trimmedHighSchoolClub.length > 30 ||
+    trimmedStudentGoal.length > 50 ||
+    trimmedBestPurchase.length > 50
+  ) {
+    return {
+      error:
+        "クイズ用プロフィールの文字数を確認してください。",
     };
   }
 
@@ -218,6 +269,8 @@ export async function saveProfileSettings(
   const profileUpdates = {
     nickname:
       trimmedNickname,
+    real_name:
+      trimmedRealName,
     notice_enabled:
       noticeEnabled,
     challenge_notice_enabled:
@@ -267,16 +320,20 @@ export async function saveProfileSettings(
     .from("mission_profiles")
     .upsert(
       {
-        user_id: user.id,
-        favorite_subject:
-          trimmedFavoriteSubject,
-        favorite_color:
-          trimmedFavoriteColor,
+        user_id:
+          user.id,
+        high_school_club:
+          trimmedHighSchoolClub,
+        student_goal:
+          trimmedStudentGoal,
+        best_purchase:
+          trimmedBestPurchase,
         updated_at:
           new Date().toISOString(),
       },
       {
-        onConflict: "user_id",
+        onConflict:
+          "user_id",
       },
     );
 
@@ -377,8 +434,11 @@ export async function saveAvatarImage(
     };
   }
 
-  const contentType = match[1];
-  const base64Data = match[2];
+  const contentType =
+    match[1];
+
+  const base64Data =
+    match[2];
 
   const imageBuffer =
     Buffer.from(
@@ -439,7 +499,9 @@ export async function saveAvatarImage(
     data: publicUrlData,
   } = supabase.storage
     .from("avatars")
-    .getPublicUrl(filePath);
+    .getPublicUrl(
+      filePath,
+    );
 
   const avatarUrl =
     `${publicUrlData.publicUrl}?t=${Date.now()}`;
@@ -470,7 +532,9 @@ export async function saveAvatarImage(
 
     await supabase.storage
       .from("avatars")
-      .remove([filePath]);
+      .remove([
+        filePath,
+      ]);
 
     return {
       error:
@@ -541,7 +605,9 @@ Promise<DeleteAccountResult> {
   } =
     await adminSupabase
       .auth.admin
-      .deleteUser(user.id);
+      .deleteUser(
+        user.id,
+      );
 
   if (deleteError) {
     console.error(
