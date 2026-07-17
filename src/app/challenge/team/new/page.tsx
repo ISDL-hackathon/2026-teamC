@@ -158,25 +158,29 @@ export default async function NewEventPage({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="capacity">
-            定員
-            <span>必須</span>
-          </label>
+  <label htmlFor="capacity">
+    定員
+    <span>必須</span>
+  </label>
 
-          <div className={styles.capacityInput}>
-            <input
-              id="capacity"
-              name="capacity"
-              type="number"
-              min={1}
-              max={100}
-              defaultValue={capacity ?? 4}
-              required
-            />
+  <p className={styles.capacityHelp}>
+    ※自分を含めた人数で設定してください
+  </p>
 
-            <span>人</span>
-          </div>
-        </div>
+  <div className={styles.capacityInput}>
+    <input
+      id="capacity"
+      name="capacity"
+      type="number"
+      min={1}
+      max={100}
+      defaultValue={capacity ?? 4}
+      required
+    />
+
+    <span>人</span>
+  </div>
+</div>
 
         <div className={styles.buttonArea}>
           <Link

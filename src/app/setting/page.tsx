@@ -971,7 +971,7 @@ startSaveTransition(
             </div>
 
             <p className={styles.helpText}>
-              先輩クイズの問題に使用されます
+              クイズの問題に使用されます
             </p>
           </div>
 
@@ -1006,7 +1006,7 @@ startSaveTransition(
             </div>
 
             <p className={styles.helpText}>
-              先輩クイズの問題に使用されます
+              クイズの問題に使用されます
             </p>
           </div>
 
